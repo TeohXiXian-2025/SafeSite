@@ -46,6 +46,8 @@ export default function WorkerDigitalPassportFIXED() {
   const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
   const [speechError, setSpeechError] = useState(null);
   const [showPermitModal, setShowPermitModal] = useState(false);
+  const [showRedZoneAlert, setShowRedZoneAlert] = useState(false);
+  const [redZoneMessage, setRedZoneMessage] = useState('');
   const [permitForm, setPermitForm] = useState({
     type: 'Hot Work',
     location: '',
@@ -546,13 +548,19 @@ export default function WorkerDigitalPassportFIXED() {
     const warningMessages = {
       english: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!',
       malay: 'AMARAN ZON MERAH! BAHAYA! EVAKUASI SEGERA! KELUAR DARI KAWASAN INI SEKARANG!',
-      bengali: 'সতর্কতা! রেড জোন! বিপদ! অবিলম্বে সরে যান! এখনই এলাকা ছাড়ুন!', // Proper Bengali
+      bengali: 'সতর্কতা! রেড জোন! বিপদ! অবিলম্বে সরে যান! এখনই এলাকা ছাড়ুন!',
       rojak: 'AWAS! ZON MERAH! BAHAYA GILA! LARI SEKARANG! KELUAR CEPAT DARI SINI!'
     };
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Play alert sound FIRST - same as supervisor
+    // Set message and show custom popup
+    setRedZoneMessage(message);
+    setShowRedZoneAlert(true);
+  };
+
+  // Play alert sound - same as supervisor
+  const playAlertSound = () => {
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -561,8 +569,8 @@ export default function WorkerDigitalPassportFIXED() {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 800; // Same as supervisor
-      oscillator.type = 'sine'; // Same as supervisor
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
       
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
@@ -570,7 +578,6 @@ export default function WorkerDigitalPassportFIXED() {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
 
-      // Play a second beep after 200ms - same as supervisor
       setTimeout(() => {
         const osc2 = audioContext.createOscillator();
         const gain2 = audioContext.createGain();
@@ -588,15 +595,39 @@ export default function WorkerDigitalPassportFIXED() {
         osc2.stop(audioContext.currentTime + 0.5);
       }, 200);
     } catch (error) {
-      console.log('Alert sound not supported:', error);
+      console.log('Audio playback not supported:', error);
     }
-    
-    // Show alert IMMEDIATELY
-    alert(message);
-    
-    // Speak the alert with urgency IMMEDIATELY - no delay
-    speakText(message, selectedLanguage, true); // true = urgent mode
   };
+
+  // Effect to handle red zone alert popup
+  useEffect(() => {
+    if (showRedZoneAlert) {
+      // Play alert sound immediately
+      playAlertSound();
+      
+      // Speak IMMEDIATELY with popup - no delay
+      setSpeechPermissionGranted(true);
+      setSpeechError(null);
+      
+      // Use requestAnimationFrame to ensure popup is rendered before speech
+      requestAnimationFrame(() => {
+        speakText(redZoneMessage, selectedLanguage, true); // true = urgent mode
+      });
+      
+      // Auto-hide after 6 seconds
+      const timer = setTimeout(() => {
+        setShowRedZoneAlert(false);
+      }, 6000);
+
+      return () => {
+        clearTimeout(timer);
+        // Stop any ongoing speech when component unmounts
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      };
+    }
+  }, [showRedZoneAlert, redZoneMessage, selectedLanguage]);
 
   const handleLanguageChange = (language) => {
     setSelectedLanguage(language);
@@ -1030,6 +1061,113 @@ export default function WorkerDigitalPassportFIXED() {
                 </p>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Red Zone Alert Popup - Custom like supervisor */}
+      <AnimatePresence>
+        {showRedZoneAlert && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+              transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+              }
+            }}
+            exit={{
+              scale: 0,
+              opacity: 0,
+              transition: { duration: 0.2 }
+            }}
+            className="alert-popup fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9999]"
+          >
+            <div className="bg-red-600 border-4 border-red-400 rounded-lg shadow-2xl min-w-[350px] max-w-[500px] animate-vibrate">
+              {/* Alert Header */}
+              <div className="bg-red-700 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 0.5 }}
+                  >
+                    <AlertTriangle className="w-8 h-8 text-white" />
+                  </motion.div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">RED ZONE ALERT</h2>
+                    <p className="text-red-200 text-sm">Immediate Action Required</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowRedZoneAlert(false)}
+                  className="p-2 hover:bg-red-800 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+
+              {/* Alert Content */}
+              <div className="px-6 py-4 bg-red-600">
+                <div className="flex items-start space-x-3">
+                  <Volume2 className="w-6 h-6 text-white mt-1 animate-pulse" />
+                  <div className="flex-1">
+                    <p className="text-white text-lg font-semibold leading-relaxed">
+                      {redZoneMessage}
+                    </p>
+                    {speechError && (
+                      <p className="text-yellow-300 text-sm mt-2">
+                        {speechError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Alert Footer */}
+              <div className="bg-red-700 px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                  <span className="text-white text-sm font-semibold">LIVE ALERT</span>
+                  {isSpeaking && (
+                    <div className="flex items-center space-x-1 text-yellow-300">
+                      <Volume2 className="w-3 h-3 animate-pulse" />
+                      <span className="text-xs">Speaking...</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => speakText(redZoneMessage, selectedLanguage, true)}
+                    className="p-1 hover:bg-red-600 rounded transition-colors"
+                    title="Repeat Message"
+                  >
+                    <Volume2 className={`w-4 h-4 text-white ${isSpeaking ? 'animate-pulse' : ''}`} />
+                  </button>
+                  <div className="text-white text-sm">
+                    {new Date().toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Pulsing Border Effect */}
+              <div className="absolute inset-0 border-4 border-red-400 rounded-lg pointer-events-none">
+                <motion.div
+                  className="absolute inset-0 border-4 border-red-300 rounded-lg"
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    opacity: [1, 0.5, 1]
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1,
+                    ease: "easeInOut"
+                  }}
+                />
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
