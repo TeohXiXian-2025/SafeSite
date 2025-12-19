@@ -91,6 +91,7 @@ export const SafetyProvider = ({ children }) => {
   const [showSiteModal, setShowSiteModal] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [alertViolationType, setAlertViolationType] = useState('');
   const [scanResult, setScanResult] = useState(null);
   const [redZoneActive, setRedZoneActive] = useState(false);
   const [currentIncidentAlert, setCurrentIncidentAlert] = useState(null);
@@ -428,7 +429,9 @@ export const SafetyProvider = ({ children }) => {
     const translatedMessage = getTranslatedText(violationType, selectedLanguage);
     const displayMessage = `${translatedMessage} (Worker: ${workerName})`;
     
+    // Store both the display message and the raw violation type for speech processing
     setAlertMessage(displayMessage);
+    setAlertViolationType(violationType); // Store the violation type
     setShowAlert(true);
     
     // Update compliance score
@@ -672,7 +675,9 @@ export const SafetyProvider = ({ children }) => {
     // Language Settings
     selectedLanguage,
     setSelectedLanguage,
-    getTranslatedText
+    getTranslatedText,
+    // Alert violation type for speech processing
+    alertViolationType
   };
 
   return (

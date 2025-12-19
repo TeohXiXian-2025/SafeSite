@@ -40,6 +40,150 @@ export default function SiteSupervisorApp() {
   const [showSettings, setShowSettings] = useState(false);
   const [showCCTV, setShowCCTV] = useState(false);
 
+  // Translations for supervisor page
+  const translations = {
+    english: {
+      siteSupervisor: 'Site Supervisor',
+      realTimeSafetyManagement: 'Real-time Safety Management',
+      zaiActive: 'Z.AI Active',
+      settings: 'Settings',
+      activePermits: 'Active Permits',
+      hotWork: 'Hot Work',
+      confinedSpace: 'Confined Space',
+      electricalWork: 'Electrical Work',
+      checkHotWorkArea: 'Check Hot Work Area',
+      scanConfinedSpace: 'Scan Confined Space',
+      inspectElectricalPanel: 'Inspect Electrical Panel',
+      scanning: 'Scanning...',
+      zaiSafetyScan: 'Z.AI Safety Scan',
+      alertEngine: 'Alert Engine',
+      unhookedHarness: 'Unhooked Harness',
+      noHelmet: 'No Helmet',
+      unauthorizedAccess: 'Unauthorized Access',
+      test: 'TEST',
+      liveCctvMonitoring: 'Live CCTV Monitoring',
+      realTimeSiteSurveillance: 'Real-time site surveillance',
+      live: 'LIVE',
+      approve: 'Approve',
+      reject: 'Reject',
+      extend: 'Extend',
+      complete: 'Complete',
+      details: 'Details',
+      permitDetails: 'Permit Details',
+      location: 'Location',
+      requester: 'Requester',
+      status: 'Status',
+      timeRemaining: 'Time Remaining',
+      riskLevel: 'Risk Level',
+      description: 'Description',
+      safetyRequirements: 'Safety Requirements',
+      approvedBy: 'Approved By',
+      languageSettings: 'Language Settings',
+      selectLanguage: 'Select Language',
+      english: 'English',
+      bahasaMelayu: 'Bahasa Melayu',
+      bahasaRojak: 'Bahasa Rojak',
+      saveClose: 'Save & Close',
+      calling: 'Calling...',
+      callWorker: 'Call Worker',
+      repeatMessage: 'Repeat Message'
+    },
+    malay: {
+      siteSupervisor: 'Penyelia Tapak',
+      realTimeSafetyManagement: 'Pengurusan Keselamatan Masa Nyata',
+      zaiActive: 'Z.AI Aktif',
+      settings: 'Tetapan',
+      activePermits: 'Permit Aktif',
+      hotWork: 'Kerja Panas',
+      confinedSpace: 'Ruang Terhad',
+      electricalWork: 'Kerja Elektrik',
+      checkHotWorkArea: 'Semak Kawasan Kerja Panas',
+      scanConfinedSpace: 'Imbas Ruang Terhad',
+      inspectElectricalPanel: 'Periksa Panel Elektrik',
+      scanning: 'Mengimbas...',
+      zaiSafetyScan: 'Imbasan Keselamatan Z.AI',
+      alertEngine: 'Enjin Amaran',
+      unhookedHarness: 'Tali Keledar Tidak Dikait',
+      noHelmet: 'Tiada Topi Keselamatan',
+      unauthorizedAccess: 'Akses Tanpa Kebenaran',
+      test: 'UJI',
+      liveCctvMonitoring: 'Pemantauan CCTV Langsung',
+      realTimeSiteSurveillance: 'Pengawasan tapak masa nyata',
+      live: 'LANGSUNG',
+      approve: 'Lulus',
+      reject: 'Tolak',
+      extend: 'Panjang',
+      complete: 'Selesai',
+      details: 'Butiran',
+      permitDetails: 'Butiran Permit',
+      location: 'Lokasi',
+      requester: 'Pemohon',
+      status: 'Status',
+      timeRemaining: 'Masa Berbaki',
+      riskLevel: 'Tahap Risiko',
+      description: 'Keterangan',
+      safetyRequirements: 'Keperluan Keselamatan',
+      approvedBy: 'Diluluskan Oleh',
+      languageSettings: 'Tetapan Bahasa',
+      selectLanguage: 'Pilih Bahasa',
+      english: 'English',
+      bahasaMelayu: 'Bahasa Melayu',
+      bahasaRojak: 'Bahasa Rojak',
+      saveClose: 'Simpan & Tutup',
+      calling: 'Memanggil...',
+      callWorker: 'Panggil Pekerja',
+      repeatMessage: 'Ulangi Mesej'
+    },
+    rojak: {
+      siteSupervisor: 'Site Supervisor / Penyelia Tapak',
+      realTimeSafetyManagement: 'Real-time Safety Management / Pengurusan Keselamatan Masa Nyata',
+      zaiActive: 'Z.AI Active / Z.AI Aktif',
+      settings: 'Settings / Tetapan',
+      activePermits: 'Active Permits / Permit Aktif',
+      hotWork: 'Hot Work / Kerja Panas',
+      confinedSpace: 'Confined Space / Ruang Terhad',
+      electricalWork: 'Electrical Work / Kerja Elektrik',
+      checkHotWorkArea: 'Check Hot Work Area / Semak Kawasan Kerja Panas',
+      scanConfinedSpace: 'Scan Confined Space / Imbas Ruang Terhad',
+      inspectElectricalPanel: 'Inspect Electrical Panel / Periksa Panel Elektrik',
+      scanning: 'Scanning... / Mengimbas...',
+      zaiSafetyScan: 'Z.AI Safety Scan / Imbasan Keselamatan Z.AI',
+      alertEngine: 'Alert Engine / Enjin Amaran',
+      unhookedHarness: 'Unhooked Harness / Tali Keledar Tidak Dikait',
+      noHelmet: 'No Helmet / Tiada Topi Keselamatan',
+      unauthorizedAccess: 'Unauthorized Access / Akses Tanpa Kebenaran',
+      test: 'TEST / UJI',
+      liveCctvMonitoring: 'Live CCTV Monitoring / Pemantauan CCTV Langsung',
+      realTimeSiteSurveillance: 'Real-time site surveillance / Pengawasan tapak masa nyata',
+      live: 'LIVE / LANGSUNG',
+      approve: 'Approve / Lulus',
+      reject: 'Reject / Tolak',
+      extend: 'Extend / Panjang',
+      complete: 'Complete / Selesai',
+      details: 'Details / Butiran',
+      permitDetails: 'Permit Details / Butiran Permit',
+      location: 'Location / Lokasi',
+      requester: 'Requester / Pemohon',
+      status: 'Status / Status',
+      timeRemaining: 'Time Remaining / Masa Berbaki',
+      riskLevel: 'Risk Level / Tahap Risiko',
+      description: 'Description / Keterangan',
+      safetyRequirements: 'Safety Requirements / Keperluan Keselamatan',
+      approvedBy: 'Approved By / Diluluskan Oleh',
+      languageSettings: 'Language Settings / Tetapan Bahasa',
+      selectLanguage: 'Select Language / Pilih Bahasa',
+      english: 'English',
+      bahasaMelayu: 'Bahasa Melayu',
+      bahasaRojak: 'Bahasa Rojak',
+      saveClose: 'Save & Close / Simpan & Tutup',
+      calling: 'Calling... / Memanggil...',
+      callWorker: 'Call Worker / Panggil Pekerja',
+      repeatMessage: 'Repeat Message / Ulangi Mesej'
+    }
+  };
+
+  const t = translations[selectedLanguage] || translations.english;
+
   const handleAIScan = (area) => {
     setIsScanning(true);
     setScanProgress(0);
@@ -101,26 +245,19 @@ export default function SiteSupervisorApp() {
           <div className="bg-construction-yellow text-black p-4 sticky top-0 z-10">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-bold">Site Supervisor</h1>
-                <p className="text-xs opacity-80">Real-time Safety Management</p>
+                <h1 className="text-lg font-bold">{t.siteSupervisor}</h1>
+                <p className="text-xs opacity-80">{t.realTimeSafetyManagement}</p>
               </div>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setShowCCTV(true)}
-                  className="p-2 hover:bg-black/10 rounded-lg transition-colors"
-                  title="Live CCTV Monitoring"
-                >
-                  <Video className="w-5 h-5" />
-                </button>
-                <button
                   onClick={() => setShowSettings(true)}
                   className="p-2 hover:bg-black/10 rounded-lg transition-colors"
-                  title="Settings"
+                  title={t.settings}
                 >
                   <Settings className="w-5 h-5" />
                 </button>
                 <Shield className="w-5 h-5" />
-                <span className="text-sm font-semibold">Z.AI Active</span>
+                <span className="text-sm font-semibold">{t.zaiActive}</span>
               </div>
             </div>
           </div>
@@ -134,7 +271,7 @@ export default function SiteSupervisorApp() {
             >
               <h2 className="text-white font-semibold mb-3 flex items-center">
                 <FileText className="w-4 h-4 mr-2 text-construction-yellow" />
-                Active Permits
+                {t.activePermits}
               </h2>
               
               <div className="space-y-2">
@@ -167,13 +304,13 @@ export default function SiteSupervisorApp() {
                             onClick={() => handlePermitAction(permit, 'approve')}
                             className="flex-1 px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded hover:bg-green-500/30 transition-colors"
                           >
-                            Approve
+                            {t.approve}
                           </button>
                           <button
                             onClick={() => handlePermitAction(permit, 'reject')}
                             className="flex-1 px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded hover:bg-red-500/30 transition-colors"
                           >
-                            Reject
+                            {t.reject}
                           </button>
                         </>
                       )}
@@ -183,22 +320,22 @@ export default function SiteSupervisorApp() {
                             onClick={() => handlePermitAction(permit, 'extend')}
                             className="flex-1 px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded hover:bg-blue-500/30 transition-colors"
                           >
-                            Extend
+                            {t.extend}
                           </button>
                           <button
                             onClick={() => handlePermitAction(permit, 'complete')}
                             className="flex-1 px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded hover:bg-yellow-500/30 transition-colors"
                           >
-                            Complete
+                            {t.complete}
                           </button>
                         </>
                       )}
                       <button
-                        onClick={() => openPermitActions(permit)}
-                        className="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded hover:bg-gray-500/30 transition-colors"
-                      >
-                        Details
-                      </button>
+                       onClick={() => openPermitActions(permit)}
+                       className="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded hover:bg-gray-500/30 transition-colors"
+                     >
+                       {t.details}
+                     </button>
                     </div>
                   </motion.div>
                 ))}
@@ -213,7 +350,7 @@ export default function SiteSupervisorApp() {
             >
               <h2 className="text-white font-semibold mb-3 flex items-center">
                 <Zap className="w-4 h-4 mr-2 text-construction-yellow" />
-                Z.AI Safety Scan
+                {t.zaiSafetyScan}
               </h2>
               
               <div className="space-y-2">
@@ -225,7 +362,7 @@ export default function SiteSupervisorApp() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Camera className="w-5 h-5 text-construction-yellow" />
-                      <span className="text-sm font-semibold">Check Hot Work Area</span>
+                      <span className="text-sm font-semibold">{t.checkHotWorkArea}</span>
                     </div>
                     <Eye className="w-4 h-4 text-gray-400" />
                   </div>
@@ -239,7 +376,7 @@ export default function SiteSupervisorApp() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Camera className="w-5 h-5 text-construction-yellow" />
-                      <span className="text-sm font-semibold">Scan Confined Space</span>
+                      <span className="text-sm font-semibold">{t.scanConfinedSpace}</span>
                     </div>
                     <Eye className="w-4 h-4 text-gray-400" />
                   </div>
@@ -253,7 +390,7 @@ export default function SiteSupervisorApp() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Camera className="w-5 h-5 text-construction-yellow" />
-                      <span className="text-sm font-semibold">Inspect Electrical Panel</span>
+                      <span className="text-sm font-semibold">{t.inspectElectricalPanel}</span>
                     </div>
                     <Eye className="w-4 h-4 text-gray-400" />
                   </div>
@@ -272,7 +409,7 @@ export default function SiteSupervisorApp() {
                     <div className="p-3 bg-dark-bg rounded-lg border border-construction-yellow/30">
                       <div className="flex items-center space-x-2 mb-2">
                         <Upload className="w-4 h-4 text-construction-yellow animate-pulse" />
-                        <span className="text-sm text-construction-yellow">Scanning...</span>
+                        <span className="text-sm text-construction-yellow">{t.scanning}</span>
                       </div>
                       <div className="w-full bg-dark-border rounded-full h-2">
                         <motion.div
@@ -308,7 +445,7 @@ export default function SiteSupervisorApp() {
                       )}
                       <div>
                         <p className="text-sm text-white font-semibold mb-1">
-                          {scanResult.status === 'approved' ? 'Permit Approved' : 'Action Required'}
+                          {scanResult.status === 'approved' ? t.approve + 'd' : 'Action Required'}
                         </p>
                         <p className="text-xs text-gray-300">{scanResult.message}</p>
                         <p className="text-xs text-gray-400 mt-1">
@@ -329,21 +466,49 @@ export default function SiteSupervisorApp() {
             >
               <h2 className="text-white font-semibold mb-3 flex items-center">
                 <AlertTriangle className="w-4 h-4 mr-2 text-construction-yellow" />
-                Alert Engine
+                {t.alertEngine}
               </h2>
               
-              <button
-                onClick={() => triggerViolationAlert('Rahman', 'UNHOOKED HARNESS')}
-                className="w-full p-4 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <AlertTriangle className="w-5 h-5 text-red-400" />
-                    <span className="text-sm font-semibold text-red-400">Trigger Test Violation</span>
+              <div className="space-y-2">
+                <button
+                  onClick={() => triggerViolationAlert('Rahman', 'UNHOOKED HARNESS')}
+                  className="w-full p-3 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="w-5 h-5 text-red-400" />
+                      <span className="text-sm font-semibold text-red-400">{t.unhookedHarness}</span>
+                    </div>
+                    <span className="text-xs text-red-400 opacity-60">{t.test}</span>
                   </div>
-                  <span className="text-xs text-red-400 opacity-60">TEST</span>
-                </div>
-              </button>
+                </button>
+                
+                <button
+                  onClick={() => triggerViolationAlert('Ahmed', 'NO HELMET')}
+                  className="w-full p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="w-5 h-5 text-orange-400" />
+                      <span className="text-sm font-semibold text-orange-400">{t.noHelmet}</span>
+                    </div>
+                    <span className="text-xs text-orange-400 opacity-60">{t.test}</span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => triggerViolationAlert('Siti', 'UNAUTHORIZED ACCESS')}
+                  className="w-full p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg hover:bg-yellow-500/20 transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                      <span className="text-sm font-semibold text-yellow-400">{t.unauthorizedAccess}</span>
+                    </div>
+                    <span className="text-xs text-yellow-400 opacity-60">{t.test}</span>
+                  </div>
+                </button>
+              </div>
             </motion.div>
 
             {/* Live CCTV - Prominent Button */}
@@ -362,13 +527,13 @@ export default function SiteSupervisorApp() {
                       <Video className="w-8 h-8" />
                     </div>
                     <div className="text-left">
-                      <h3 className="text-lg font-bold">Live CCTV Monitoring</h3>
-                      <p className="text-sm opacity-80">Real-time site surveillance</p>
+                      <h3 className="text-lg font-bold">{t.liveCctvMonitoring}</h3>
+                      <p className="text-sm opacity-80">{t.realTimeSiteSurveillance}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="px-3 py-1 bg-black/20 rounded-full">
-                      <span className="text-sm font-semibold">LIVE</span>
+                      <span className="text-sm font-semibold">{t.live}</span>
                     </div>
                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                   </div>
@@ -397,7 +562,7 @@ export default function SiteSupervisorApp() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">Permit Details</h3>
+                <h3 className="text-lg font-semibold text-white">{t.permitDetails}</h3>
                 <button
                   onClick={() => setShowPermitActions(false)}
                   className="text-gray-400 hover:text-white"
@@ -408,29 +573,29 @@ export default function SiteSupervisorApp() {
 
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-gray-400">Permit Type</p>
+                  <p className="text-xs text-gray-400">{t.permitType || 'Permit Type'}</p>
                   <p className="text-sm font-semibold text-white">{selectedPermit.type}</p>
                 </div>
                 
                 <div>
-                  <p className="text-xs text-gray-400">Location</p>
+                  <p className="text-xs text-gray-400">{t.location}</p>
                   <p className="text-sm text-white">{selectedPermit.location}</p>
                 </div>
                 
                 <div>
-                  <p className="text-xs text-gray-400">Requester</p>
+                  <p className="text-xs text-gray-400">{t.requester}</p>
                   <p className="text-sm text-white">{selectedPermit.requester}</p>
                 </div>
                 
                 <div>
-                  <p className="text-xs text-gray-400">Status</p>
+                  <p className="text-xs text-gray-400">{t.status}</p>
                   <span className={`inline-block px-2 py-1 text-xs rounded-full ${getStatusColor(selectedPermit.status)}`}>
                     {selectedPermit.status.toUpperCase()}
                   </span>
                 </div>
                 
                 <div>
-                  <p className="text-xs text-gray-400">Time Remaining</p>
+                  <p className="text-xs text-gray-400">{t.timeRemaining}</p>
                   <p className="text-sm text-white flex items-center">
                     <Clock className="w-3 h-3 mr-1" />
                     {selectedPermit.expiry}
@@ -439,14 +604,14 @@ export default function SiteSupervisorApp() {
 
                 {selectedPermit.description && (
                   <div>
-                    <p className="text-xs text-gray-400">Description</p>
+                    <p className="text-xs text-gray-400">{t.description}</p>
                     <p className="text-sm text-white">{selectedPermit.description}</p>
                   </div>
                 )}
 
                 {selectedPermit.riskLevel && (
                   <div>
-                    <p className="text-xs text-gray-400">Risk Level</p>
+                    <p className="text-xs text-gray-400">{t.riskLevel}</p>
                     <span className={`inline-block px-2 py-1 text-xs rounded ${
                       selectedPermit.riskLevel === 'high' ? 'bg-red-500/20 text-red-400' :
                       selectedPermit.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -459,7 +624,7 @@ export default function SiteSupervisorApp() {
 
                 {selectedPermit.requirements && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-2">Safety Requirements</p>
+                    <p className="text-xs text-gray-400 mb-2">{t.safetyRequirements}</p>
                     <div className="space-y-1">
                       {selectedPermit.requirements.map((req, index) => (
                         <div key={index} className="flex items-center text-xs text-white">
@@ -473,7 +638,7 @@ export default function SiteSupervisorApp() {
 
                 {selectedPermit.approvedBy && (
                   <div>
-                    <p className="text-xs text-gray-400">Approved By</p>
+                    <p className="text-xs text-gray-400">{t.approvedBy}</p>
                     <p className="text-sm text-white">{selectedPermit.approvedBy}</p>
                     {selectedPermit.approvedAt && (
                       <p className="text-xs text-gray-400">{selectedPermit.approvedAt}</p>
@@ -490,13 +655,13 @@ export default function SiteSupervisorApp() {
                       onClick={() => handlePermitAction(selectedPermit, 'approve')}
                       className="flex-1 px-3 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition-colors"
                     >
-                      Approve
+                      {t.approve}
                     </button>
                     <button
                       onClick={() => handlePermitAction(selectedPermit, 'reject')}
                       className="flex-1 px-3 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors"
                     >
-                      Reject
+                      {t.reject}
                     </button>
                   </>
                 )}
@@ -506,13 +671,13 @@ export default function SiteSupervisorApp() {
                       onClick={() => handlePermitAction(selectedPermit, 'extend')}
                       className="flex-1 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                     >
-                      Extend +2h
+                      {t.extend} +2h
                     </button>
                     <button
                       onClick={() => handlePermitAction(selectedPermit, 'complete')}
                       className="flex-1 px-3 py-2 bg-yellow-500 text-white text-sm rounded hover:bg-yellow-600 transition-colors"
                     >
-                      Complete
+                      {t.complete}
                     </button>
                   </>
                 )}
@@ -540,7 +705,7 @@ export default function SiteSupervisorApp() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white flex items-center">
                   <Globe className="w-5 h-5 mr-2 text-construction-yellow" />
-                  Language Settings
+                  {t.languageSettings}
                 </h3>
                 <button
                   onClick={() => setShowSettings(false)}
@@ -552,7 +717,7 @@ export default function SiteSupervisorApp() {
 
               <div className="space-y-3">
                 <p className="text-sm text-gray-300 mb-3">
-                  Select your preferred language for alerts and notifications:
+                  Select your preferred language for interface, alerts and notifications:
                 </p>
                 
                 <div className="space-y-2">
@@ -568,7 +733,7 @@ export default function SiteSupervisorApp() {
                       <div className="flex items-center">
                         <span className="text-lg mr-3">🇬🇧</span>
                         <div className="text-left">
-                          <p className="font-semibold">English</p>
+                          <p className="font-semibold">{t.english}</p>
                           <p className="text-xs opacity-70">Default language</p>
                         </div>
                       </div>
@@ -590,7 +755,7 @@ export default function SiteSupervisorApp() {
                       <div className="flex items-center">
                         <span className="text-lg mr-3">🇲🇾</span>
                         <div className="text-left">
-                          <p className="font-semibold">Bahasa Melayu</p>
+                          <p className="font-semibold">{t.bahasaMelayu}</p>
                           <p className="text-xs opacity-70">Bahasa kebangsaan</p>
                         </div>
                       </div>
@@ -612,7 +777,7 @@ export default function SiteSupervisorApp() {
                       <div className="flex items-center">
                         <span className="text-lg mr-3">🇲🇾🇬🇧</span>
                         <div className="text-left">
-                          <p className="font-semibold">Bahasa Rojak</p>
+                          <p className="font-semibold">{t.bahasaRojak}</p>
                           <p className="text-xs opacity-70">English + Malay mix</p>
                         </div>
                       </div>
@@ -628,7 +793,7 @@ export default function SiteSupervisorApp() {
                   <p className="text-sm text-white">
                     {selectedLanguage === 'english' && 'WARNING: Unhooked Safety Harness'}
                     {selectedLanguage === 'malay' && 'AMARAN: Tali pinggang keselamatan tidak dipasang'}
-                    {selectedLanguage === 'rojak' && 'WARNING: Unhooked Safety Harness! AMARAN: Tali pinggang keselamatan tidak dipasang!'}
+                    {selectedLanguage === 'rojak' && 'Woi Rahman! Tali safety tak pasang lagi ke? Alamak, gila bahaya weh! Cepat pasang la!'}
                   </p>
                 </div>
               </div>
@@ -638,7 +803,7 @@ export default function SiteSupervisorApp() {
                   onClick={() => setShowSettings(false)}
                   className="flex-1 px-4 py-2 bg-construction-yellow text-black font-semibold rounded hover:bg-yellow-400 transition-colors"
                 >
-                  Save & Close
+                  {t.saveClose}
                 </button>
               </div>
             </motion.div>

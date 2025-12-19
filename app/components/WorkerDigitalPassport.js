@@ -519,7 +519,7 @@ export default function WorkerDigitalPassport() {
       english: 'RED ZONE ALERT! Evacuate Immediately!',
       malay: 'AMARAN ZON MERAH! Evakuasi Segera!',
       bengali: 'রেড জোন সতর্কতা! অবিলম্বে সরে যান!',
-      rojak: 'RED ZONE ALERT! AMARAN ZON MERAH! Evacuate Immediately! Evakuasi Segera!',
+      rojak: 'PERHATIAN! ZON MERAH TU! KELUAR CEPAT! LARI SEKARANG, JANGAN DUK SINI!',
       malayPlusEnglish: 'AMARAN ZON MERAH! Evakuasi Segera! RED ZONE ALERT! Evacuate Immediately!'
     };
     
@@ -542,8 +542,9 @@ export default function WorkerDigitalPassport() {
           utterance.lang = 'en-US';
         }
         
-        utterance.rate = 1.0;
-        utterance.volume = 0.8;
+        utterance.rate = 1.4; // Faster for more urgency
+        utterance.pitch = 1.3; // Higher pitch for emergency
+        utterance.volume = 1.0; // Maximum volume for urgency
         
         // Simple speak call without complex event handlers
         window.speechSynthesis.speak(utterance);
@@ -1168,19 +1169,6 @@ export default function WorkerDigitalPassport() {
                   )}
                 </button>
 
-                <button
-                  onClick={() => handleLanguageChange('malayPlusEnglish')}
-                  className={`w-full p-3 rounded-lg border transition-all flex items-center justify-between ${
-                    selectedLanguage === 'malayPlusEnglish'
-                      ? 'bg-construction-yellow/20 border-construction-yellow text-construction-yellow'
-                      : 'bg-dark-bg border-dark-border text-white hover:border-construction-yellow/50'
-                  }`}
-                >
-                  <span>Malay + English</span>
-                  {selectedLanguage === 'malayPlusEnglish' && (
-                    <div className="w-2 h-2 bg-construction-yellow rounded-full"></div>
-                  )}
-                </button>
               </div>
 
               <div className="mt-4 p-3 bg-dark-bg rounded-lg">

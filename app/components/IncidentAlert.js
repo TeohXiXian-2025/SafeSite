@@ -189,11 +189,11 @@ export default function IncidentAlert({ incident, onClose, autoClose = true }) {
 
   const getSeverityColor = (severity) => {
     switch (severity) {
-      case 'critical': return 'border-red-500 bg-red-500/10';
-      case 'high': return 'border-orange-500 bg-orange-500/10';
-      case 'medium': return 'border-yellow-500 bg-yellow-500/10';
-      case 'low': return 'border-blue-500 bg-blue-500/10';
-      default: return 'border-gray-500 bg-gray-500/10';
+      case 'critical': return 'border-red-500 bg-red-500/90';
+      case 'high': return 'border-orange-500 bg-orange-500/90';
+      case 'medium': return 'border-yellow-500 bg-yellow-500/90';
+      case 'low': return 'border-blue-500 bg-blue-500/90';
+      default: return 'border-gray-500 bg-gray-500/90';
     }
   };
 
