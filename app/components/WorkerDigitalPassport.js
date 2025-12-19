@@ -425,16 +425,16 @@ export default function WorkerDigitalPassportFIXED() {
         utterance.pitch = 0.6; // Lower pitch for male voice
       }
       
-      // Override for urgent mode - still fast but understandable
+      // Override for urgent mode - much slower for better comprehension
       if (isUrgent) {
         if (language === 'malay' || language === 'rojak') {
-          utterance.rate = 1.2; // Fast but clear for Malay/Rojak
+          utterance.rate = 0.8; // Slower even for urgent Malay/Rojak
         } else if (language === 'bengali') {
-          utterance.rate = 1.3; // Fast but clear for Bengali
+          utterance.rate = 0.9; // Slower even for urgent Bengali
         } else {
-          utterance.rate = 1.5; // Fast for English
+          utterance.rate = 1.2; // Moderate for English urgent
         }
-        utterance.pitch = 0.5; // Deep male voice for urgency
+        utterance.pitch = 0.6; // Not too deep, still clear
       }
       
       utterance.volume = 1.0; // Maximum volume
