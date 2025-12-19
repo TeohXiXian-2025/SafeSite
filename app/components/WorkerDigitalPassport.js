@@ -507,13 +507,51 @@ export default function WorkerDigitalPassport() {
       let preferredVoice;
       
       if (lang === 'bn') {
-        // Bengali voice selection
-        preferredVoice = voices.find(voice =>
-          voice.lang.includes('bn') ||
-          voice.lang.includes('hi') ||
-          voice.name.includes('Bengali') ||
-          voice.name.includes('Hindi')
-        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
+        // Enhanced Bengali voice selection
+        console.log('=== BENGALI VOICE SELECTION ===');
+        const bengaliVoices = voices.filter(v =>
+          v.lang.includes('bn') ||
+          v.lang.includes('hi') ||
+          v.name.toLowerCase().includes('bengali') ||
+          v.name.toLowerCase().includes('hindi') ||
+          v.name.toLowerCase().includes('india')
+        );
+        console.log('Bengali/Hindi voices found:', bengaliVoices.length);
+        bengaliVoices.forEach(v => console.log(`- ${v.name} (${v.lang})`));
+        
+        // Priority 1: Bengali voices
+        preferredVoice = voices.find(voice => voice.lang.includes('bn'));
+        
+        // Priority 2: Hindi voices (often available in browsers)
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('hi'));
+        }
+        
+        // Priority 3: Indian English voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('en-IN') ||
+            voice.name.toLowerCase().includes('india')
+          );
+        }
+        
+        // Priority 4: Any voice with Indian/Bengali in name
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.toLowerCase().includes('bengali') ||
+            voice.name.toLowerCase().includes('hindi') ||
+            voice.name.toLowerCase().includes('india')
+          );
+        }
+        
+        // Priority 5: Default English voice
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('en') && voice.default);
+        }
+        
+        console.log('Selected Bengali voice:', preferredVoice ? `${preferredVoice.name} (${preferredVoice.lang})` : 'None');
+        console.log('=== END BENGALI VOICE SELECTION ===');
+        
       } else if (lang === 'ms') {
         // Use the same voice selection logic as ViolationAlert
         const bestMalayVoice = selectBestMalayVoice(voices);
@@ -583,6 +621,10 @@ export default function WorkerDigitalPassport() {
   };
 
   const handlePlayAudio = (sop) => {
+    // Grant permission on user interaction
+    setSpeechPermissionGranted(true);
+    setSpeechError(null);
+    
     setSelectedSOP(sop);
     setIsPlaying(true);
     setAudioProgress(0);
@@ -591,12 +633,18 @@ export default function WorkerDigitalPassport() {
     let textToSpeak = sop.content.english;
     let langToUse = 'en';
     
+    console.log('Playing SOP for language:', selectedLanguage);
+    
     if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
       textToSpeak = sop.content.malay || sop.content.english;
       langToUse = 'ms';
+      console.log('Using Malay text:', textToSpeak);
     } else if (selectedLanguage === 'bengali') {
       textToSpeak = sop.content.bengali;
       langToUse = 'bn';
+      console.log('Using Bengali text:', textToSpeak);
+    } else {
+      console.log('Using English text:', textToSpeak);
     }
     
     speakSOPContent(textToSpeak, langToUse);
@@ -638,89 +686,97 @@ export default function WorkerDigitalPassport() {
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Start speaking after user interaction
-    try {
-      if ('speechSynthesis' in window) {
-        // Cancel any previous speech
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(message);
-        
-        // Set language based on selection
-        if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
-          utterance.lang = 'ms-MY';
-        } else if (selectedLanguage === 'bengali') {
-          utterance.lang = 'bn-IN';
-        } else {
-          utterance.lang = 'en-US';
-        }
-        
-        utterance.rate = 1.4; // Faster for more urgency
-        utterance.pitch = 1.3; // Higher pitch for emergency
-        utterance.volume = 1.0; // Maximum volume for urgency
-        
-        // Enhanced voice selection for red zone alerts
-        if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
+    // Show browser alert immediately
+    alert(message);
+    
+    // Start speaking after user interaction (with a small delay to ensure alert is processed)
+    setTimeout(() => {
+      try {
+        if ('speechSynthesis' in window) {
+          // Cancel any previous speech
+          window.speechSynthesis.cancel();
+          
+          const utterance = new SpeechSynthesisUtterance(message);
+          
+          // Set language based on selection
+          let langToUse = 'en-US';
+          if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
+            langToUse = 'ms-MY';
+          } else if (selectedLanguage === 'bengali') {
+            langToUse = 'bn-IN';
+          }
+          
+          utterance.lang = langToUse;
+          utterance.rate = 1.4; // Faster for more urgency
+          utterance.pitch = 1.3; // Higher pitch for emergency
+          utterance.volume = 1.0; // Maximum volume for urgency
+          
+          // Enhanced voice selection for red zone alerts
           const voices = availableVoices;
           let preferredVoice = null;
           
-          // Same priority logic as other functions
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('ms-MY') ||
-            voice.lang.includes('ms-ID')
-          );
-          
-          if (!preferredVoice) {
+          if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
+            // Use the same voice selection logic as other functions
+            preferredVoice = selectBestMalayVoice(voices);
+            
+            if (preferredVoice) {
+              utterance.voice = preferredVoice;
+              utterance.lang = preferredVoice.lang;
+              console.log('Selected red zone Malay voice:', preferredVoice.name);
+            }
+          } else if (selectedLanguage === 'bengali') {
+            // Bengali voice selection (same logic as SOP)
+            preferredVoice = voices.find(voice => voice.lang.includes('bn')) ||
+                           voices.find(voice => voice.lang.includes('hi')) ||
+                           voices.find(voice => voice.lang.includes('en-IN')) ||
+                           voices.find(voice => voice.name.toLowerCase().includes('bengali')) ||
+                           voices.find(voice => voice.name.toLowerCase().includes('hindi')) ||
+                           voices.find(voice => voice.default && voice.lang.includes('en'));
+            
+            if (preferredVoice) {
+              utterance.voice = preferredVoice;
+              utterance.lang = preferredVoice.lang;
+              console.log('Selected red zone Bengali voice:', preferredVoice.name);
+            }
+          } else {
+            // English voice selection
             preferredVoice = voices.find(voice =>
-              voice.lang.includes('id-ID') ||
-              voice.name.toLowerCase().includes('indonesian')
-            );
+              (voice.name.includes('Google') && voice.lang.includes('en')) ||
+              (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
+              (voice.name.includes('Siri') && voice.lang.includes('en')) ||
+              voice.name.includes('Karen') ||
+              voice.name.includes('Samantha') ||
+              voice.name.includes('Zira')
+            ) || voices.find(voice => voice.lang.includes('en') && voice.default);
+            
+            if (preferredVoice) {
+              utterance.voice = preferredVoice;
+              console.log('Selected red zone English voice:', preferredVoice.name);
+            }
           }
           
-          if (!preferredVoice) {
-            preferredVoice = voices.find(voice =>
-              voice.name.toLowerCase().includes('malay') &&
-              voice.name.toLowerCase().includes('google')
-            );
-          }
+          utterance.onstart = () => {
+            console.log('Red zone alert speech started for language:', selectedLanguage);
+            setIsSpeaking(true);
+          };
+          utterance.onend = () => {
+            console.log('Red zone alert speech ended');
+            setIsSpeaking(false);
+          };
+          utterance.onerror = (e) => {
+            console.error('Red zone alert speech error:', e);
+            setIsSpeaking(false);
+            setSpeechError('Speech error: ' + e.error);
+          };
           
-          if (!preferredVoice) {
-            preferredVoice = voices.find(voice =>
-              voice.name.toLowerCase().includes('malay') &&
-              voice.name.toLowerCase().includes('microsoft')
-            );
-          }
-          
-          if (preferredVoice) {
-            utterance.voice = preferredVoice;
-            console.log('Selected red zone voice:', preferredVoice.name);
-          }
+          // Speak after user interaction
+          window.speechSynthesis.speak(utterance);
         }
-        
-        utterance.onstart = () => {
-          console.log('Red zone alert speech started');
-          setIsSpeaking(true);
-        };
-        utterance.onend = () => {
-          console.log('Red zone alert speech ended');
-          setIsSpeaking(false);
-        };
-        utterance.onerror = (e) => {
-          console.error('Red zone alert speech error:', e);
-          setIsSpeaking(false);
-          setSpeechError('Speech error: ' + e.error);
-        };
-        
-        // Speak after user interaction
-        window.speechSynthesis.speak(utterance);
+      } catch (error) {
+        console.error('Speech not available:', error);
+        setSpeechError('Speech not available: ' + error.message);
       }
-    } catch (error) {
-      console.error('Speech not available:', error);
-      setSpeechError('Speech not available: ' + error.message);
-    }
-    
-    // Show browser alert immediately after starting speech
-    alert(message);
+    }, 100); // Small delay to ensure alert is processed
   };
 
   const handleLanguageChange = (language) => {
@@ -965,6 +1021,7 @@ export default function WorkerDigitalPassport() {
                         onClick={() => {
                           setSpeechPermissionGranted(true);
                           setSpeechError(null);
+                          console.log('Manual English button clicked');
                           speakSOPContent(selectedSOP.content.english, 'en');
                         }}
                         className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
@@ -977,6 +1034,7 @@ export default function WorkerDigitalPassport() {
                           onClick={() => {
                             setSpeechPermissionGranted(true);
                             setSpeechError(null);
+                            console.log('Manual Bengali button clicked');
                             speakSOPContent(selectedSOP.content.bengali, 'bn');
                           }}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
@@ -990,6 +1048,7 @@ export default function WorkerDigitalPassport() {
                           onClick={() => {
                             setSpeechPermissionGranted(true);
                             setSpeechError(null);
+                            console.log('Manual Malay button clicked');
                             speakSOPContent(selectedSOP.content.malay, 'ms');
                           }}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
