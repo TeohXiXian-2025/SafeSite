@@ -110,24 +110,53 @@ export default function ViolationAlert() {
 
   // Simple test function for debugging speech
   const testSpeech = () => {
-    console.log('=== SPEECH TEST ===');
-    console.log('Speech synthesis supported:', 'speechSynthesis' in window);
-    console.log('Available voices:', window.speechSynthesis.getVoices().length);
-    console.log('Current language:', selectedLanguage);
-    
-    if ('speechSynthesis' in window) {
-      const testUtterance = new SpeechSynthesisUtterance('Test speech. This is a test.');
-      testUtterance.lang = selectedLanguage === 'malay' || selectedLanguage === 'rojak' ? 'ms-MY' : 'en-US';
+    try {
+      console.log('=== BASIC SPEECH TEST ===');
+      
+      if (!('speechSynthesis' in window)) {
+        console.error('Speech synthesis NOT supported');
+        alert('Speech synthesis not supported in this browser');
+        return;
+      }
+      
+      console.log('Speech synthesis supported');
+      console.log('Voices available:', window.speechSynthesis.getVoices().length);
+      
+      // Cancel any existing speech
+      window.speechSynthesis.cancel();
+      
+      // Create very simple test utterance
+      const testUtterance = new SpeechSynthesisUtterance('Test speech. Hello world.');
+      testUtterance.lang = 'en-US';
       testUtterance.rate = 1.0;
       testUtterance.pitch = 1.0;
+      testUtterance.volume = 1.0;
       
-      testUtterance.onstart = () => console.log('Test speech started');
-      testUtterance.onend = () => console.log('Test speech ended');
-      testUtterance.onerror = (e) => console.error('Test speech error:', e);
+      testUtterance.onstart = () => {
+        console.log('✅ Test speech STARTED successfully');
+        alert('Speech test started - you should hear "Test speech. Hello world."');
+      };
       
+      testUtterance.onend = () => {
+        console.log('✅ Test speech ENDED successfully');
+        alert('Speech test completed successfully');
+      };
+      
+      testUtterance.onerror = (e) => {
+        console.error('❌ Test speech FAILED:', e);
+        alert('Speech test failed: ' + e.error);
+      };
+      
+      // Speak
       window.speechSynthesis.speak(testUtterance);
+      console.log('Test speech command sent');
+      
+    } catch (error) {
+      console.error('❌ Speech test error:', error);
+      alert('Speech test error: ' + error.message);
     }
-    console.log('=== END SPEECH TEST ===');
+    
+    console.log('=== END BASIC SPEECH TEST ===');
   };
 
   const speakAlertMessage = (message) => {
@@ -146,138 +175,77 @@ export default function ViolationAlert() {
   };
 
   const speakAlertMessageInternal = (message, language, violationType) => {
-        // Create speech synthesis utterance
-        const utterance = new SpeechSynthesisUtterance();
-        
-        // Configure based on language parameter (not selectedLanguage state)
-        if (language === 'malay') {
-          // For Malay, use the same message as displayed to ensure consistency
-          // Extract the violation type and use the proper Malay translation
-          let malayMessage = message;
-          
-          // If the message is in English, translate it to Malay based on violation type
-          if (message.includes('WARNING:') || message.includes('Unhooked') || message.includes('Unauthorized')) {
-            const workerMatch = message.match(/Worker:\s*([A-Za-z\s]+)/);
-            const workerName = workerMatch ? workerMatch[1].trim() : 'Unknown';
-            
-            if (alertViolationType === 'UNHOOKED HARNESS') {
-              malayMessage = 'AMARAN: Tali pinggang keselamatan tidak dipasang. (Worker: ' + workerName + ')';
-            } else if (alertViolationType === 'NO HELMET') {
-              malayMessage = 'AMARAN: Topi keselamatan tidak dipakai. (Worker: ' + workerName + ')';
-            } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
-              malayMessage = 'AMARAN: Akses tanpa kebenaran ke kawasan terhad. (Worker: ' + workerName + ')';
-            }
-          }
-          
-          utterance.text = malayMessage;
-          utterance.lang = 'ms-MY';
-          utterance.rate = 0.95; // Slightly adjusted for better clarity
-          utterance.pitch = 1.05; // More natural pitch
-      } else if (language === 'rojak') {
-        // For Bahasa Rojak, override with natural Malaysian-style urgent speech
-        // Extract worker name from the message
-        const workerMatch = message.match(/Worker:\s*([A-Za-z\s]+)/);
-        const workerName = workerMatch ? workerMatch[1].trim() : 'Rahman';
-        
-        // Create different messages based on violation type with authentic Malaysian slang
-        let rojakMessage = '';
-        if (alertViolationType === 'UNHOOKED HARNESS') {
-          rojakMessage = `Woi ${workerName}! Tali safety tak pasang lagi ke? Alamak, gila bahaya weh! Cepat pasang la, nanti terjun dari atas! Jangan gila-gila dah!`;
-        } else if (alertViolationType === 'NO HELMET') {
-          rojakMessage = `Eh ${workerName}! Topi kepala tak pakai pulak? Kau nak mampus ke? Kepala kau hancur nanti kalau kena batu! Cepat pakai, jangan bodoh!`;
-        } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
-          rojakMessage = `Hei ${workerName}! Apa hal kau masuk sini? Ini kawasan privet la weh! Keluar cepat sebelum aku panggil guard! Jangan jaga muka je!`;
-        } else {
-          // Default message for other violations
-          rojakMessage = `Woi ${workerName}! Perhatian sikit la! Bahaya gila kat sini! Jangan jadi hero, ikut je peraturan!`;
-        }
-        
-        utterance.text = rojakMessage;
-        utterance.lang = 'ms-MY';
-        utterance.rate = 1.05; // Slightly slower for better comprehension
-        utterance.pitch = 1.1; // More natural but still urgent
-        utterance.volume = 1.0;
-        
-        console.log('ViolationAlert - Rojak message (working version):', rojakMessage);
-        console.log('ViolationAlert - Violation type:', alertViolationType);
-      } else {
-        // English
-        utterance.text = message;
-        utterance.lang = 'en-US';
-        utterance.rate = 1.1; // Slightly slower for better clarity
-        utterance.pitch = 1.1; // More natural pitch
+    try {
+      console.log('=== SIMPLE SPEECH START ===');
+      console.log('Message:', message);
+      console.log('Language:', language);
+      console.log('Violation Type:', violationType);
+      
+      // Check if speech synthesis is available
+      if (!('speechSynthesis' in window)) {
+        console.error('Speech synthesis not supported');
+        return;
       }
       
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      // Simple message selection
+      let textToSpeak = message;
+      let langToUse = 'en-US';
+      
+      if (language === 'malay') {
+        if (violationType === 'UNHOOKED HARNESS') {
+          textToSpeak = 'AMARAN: Tali pinggang keselamatan tidak dipasang';
+        } else if (violationType === 'NO HELMET') {
+          textToSpeak = 'AMARAN: Topi keselamatan tidak dipakai';
+        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+          textToSpeak = 'AMARAN: Akses tanpa kebenaran';
+        }
+        langToUse = 'ms-MY';
+      } else if (language === 'rojak') {
+        if (violationType === 'UNHOOKED HARNESS') {
+          textToSpeak = 'Woi! Tali safety tak pasang lagi ke? Bahaya weh!';
+        } else if (violationType === 'NO HELMET') {
+          textToSpeak = 'Eh! Topi kepala tak pakai pulak? Cepat pakai!';
+        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+          textToSpeak = 'Hei! Apa hal kau masuk sini? Keluar cepat!';
+        }
+        langToUse = 'ms-MY';
+      }
+      
+      // Create simple utterance
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = langToUse;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Get available voices
-      const voices = availableVoices.length > 0 ? availableVoices : window.speechSynthesis.getVoices();
-      let preferredVoice;
-      
-      if (language === 'malay' || language === 'rojak') {
-        // For Malay and Rojak, try Malay/Indonesian voices first
-        preferredVoice = voices.find(voice =>
-          voice.lang.includes('ms') ||
-          voice.lang.includes('id') ||
-          voice.name.includes('Malay') ||
-          voice.name.includes('Indonesian') ||
-          voice.name.includes('Malaysia')
-        );
-        
-        // If no Malay voice, try high-quality English voices that work well across platforms
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            (voice.lang.includes('en-US') || voice.lang.includes('en-GB')) &&
-            (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.name.includes('Siri'))
-          ) || voices.find(voice => voice.lang.includes('en') && voice.default);
-        }
-      } else {
-        // For English, prioritize cross-platform compatible voices
-        preferredVoice = voices.find(voice =>
-          (voice.name.includes('Google') && voice.lang.includes('en')) ||
-          (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
-          (voice.name.includes('Siri') && voice.lang.includes('en')) ||
-          voice.name.includes('Karen') ||
-          voice.name.includes('Samantha') ||
-          voice.name.includes('Zira')
-        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
-      }
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-        console.log('Using voice:', preferredVoice.name, 'Language:', preferredVoice.lang, 'Selected Language:', language);
-      } else {
-        console.log('No preferred voice found, using default');
-      }
-      
-      // Event handlers
+      // Simple event handlers
       utterance.onstart = () => {
-        console.log('Speech started for', language, ':', utterance.text);
-        console.log('Speech settings - lang:', utterance.lang, 'rate:', utterance.rate, 'pitch:', utterance.pitch);
+        console.log('Speech started:', textToSpeak);
         setIsSpeaking(true);
       };
+      
       utterance.onend = () => {
-        console.log('Speech completed for', language);
+        console.log('Speech ended');
         setIsSpeaking(false);
-      };
-      utterance.onerror = (event) => {
-        console.error('Speech error for', language, ':', event);
-        console.error('Error details:', event.error, event.message);
-        setIsSpeaking(false);
-        // Retry once if there's an error
-        if (!event.hasRetried) {
-          event.hasRetried = true;
-          setTimeout(() => {
-            console.log('Retrying speech for', language);
-            window.speechSynthesis.speak(utterance);
-          }, 500);
-        }
       };
       
-      // Simple speech execution without complex timing
-      console.log('About to speak:', utterance.text);
-      console.log('Voice being used:', utterance.voice ? utterance.voice.name : 'default');
+      utterance.onerror = (e) => {
+        console.error('Speech error:', e);
+        setIsSpeaking(false);
+      };
+      
+      // Speak immediately
+      console.log('Speaking now:', textToSpeak);
       window.speechSynthesis.speak(utterance);
+      
+      console.log('=== SIMPLE SPEECH END ===');
+    } catch (error) {
+      console.error('Speech function error:', error);
+      setIsSpeaking(false);
+    }
   };
 
   useEffect(() => {
