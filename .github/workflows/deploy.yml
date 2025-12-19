@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# Set permissions for the deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -27,6 +33,13 @@ jobs:
       run: npm run build
       env:
         NODE_ENV: production
+        
+    - name: Fix JavaScript errors in static build
+      run: |
+        # Replace unsafe self.__next_f references with safe version
+        if [ -f "out/index.html" ]; then
+          sed -i 's/self\.__next_f/(typeof self !== "undefined" ? self : window).__next_f/g' out/index.html
+        fi
         
     - name: Setup Pages
       uses: actions/configure-pages@v4
