@@ -269,14 +269,15 @@ export default function ViolationAlert() {
         }
         langToUse = 'ms-MY';
       } else if (language === 'rojak') {
+        // More explicit Malaysian slang that works better with TTS
         if (violationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'Woi! Tali safety tak pasang lagi ke? Bahaya weh!';
+          textToSpeak = 'WARNING! Safety harness not connected! DANGER! Bahaya!';
         } else if (violationType === 'NO HELMET') {
-          textToSpeak = 'Eh! Topi kepala tak pakai pulak? Cepat pakai!';
+          textToSpeak = 'ATTENTION! No helmet! Please wear helmet now!';
         } else if (violationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'Hei! Apa hal kau masuk sini? Keluar cepat!';
+          textToSpeak = 'ALERT! Unauthorized area! Exit immediately! Keluar sekarang!';
         }
-        langToUse = 'ms-MY';
+        langToUse = 'en-US'; // Force English for better compatibility
       }
       
       // Create utterance
@@ -286,57 +287,44 @@ export default function ViolationAlert() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Enhanced voice selection for consistent Bahasa Rojak
+      // Simplified and more direct voice selection
       if (language === 'malay' || language === 'rojak') {
+        // Always try to use the best available voice, but prioritize clarity
         const bestMalayVoice = selectBestMalayVoice(availableVoices);
+        const bestEnglishVoice = availableVoices.find(voice =>
+          voice.lang.includes('en-US') &&
+          (voice.name.toLowerCase().includes('google') ||
+           voice.name.toLowerCase().includes('microsoft'))
+        ) || availableVoices.find(voice => voice.default && voice.lang.includes('en'));
         
-        if (bestMalayVoice) {
-          utterance.voice = bestMalayVoice;
-          utterance.lang = bestMalayVoice.lang;
-          console.log('Selected Malay voice:', bestMalayVoice.name, '(', bestMalayVoice.lang, ')');
+        // Prefer Malay voice if available, otherwise use best English voice
+        const selectedVoice = bestMalayVoice || bestEnglishVoice;
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          utterance.lang = selectedVoice.lang;
+          console.log('Selected voice for', language, ':', selectedVoice.name, '(', selectedVoice.lang, ')');
           
-          // Adjust speech parameters for more natural Malaysian accent
-          utterance.rate = 0.95; // Slightly slower for clarity
-          utterance.pitch = 1.0; // Normal pitch
-          utterance.volume = 1.0; // Full volume for alerts
-        } else {
-          // Fallback: Use English voice but with Malaysian-style text
-          console.log('No Malay voice found, using English fallback with Malaysian-style pronunciation');
-          
-          const englishVoice = availableVoices.find(voice =>
-            voice.lang.includes('en-US') &&
-            (voice.name.toLowerCase().includes('google') ||
-             voice.name.toLowerCase().includes('microsoft'))
-          ) || availableVoices.find(voice => voice.default && voice.lang.includes('en'));
-          
-          if (englishVoice) {
-            utterance.voice = englishVoice;
-            utterance.lang = 'en-US';
-            console.log('Using English fallback voice:', englishVoice.name);
-          }
-          
-          // Modify text to be more pronounceable by English TTS while keeping Malaysian flavor
-          if (language === 'rojak') {
-            if (violationType === 'UNHOOKED HARNESS') {
-              textToSpeak = 'Warning! Safety harness not connected! Danger!';
-            } else if (violationType === 'NO HELMET') {
-              textToSpeak = 'Hey! No helmet worn! Put it on now!';
-            } else if (violationType === 'UNAUTHORIZED ACCESS') {
-              textToSpeak = 'Hey! What are you doing here? Get out now!';
-            }
+          // Adjust parameters based on voice type
+          if (bestMalayVoice) {
+            utterance.rate = 0.9; // Slower for Malay
+            utterance.pitch = 1.0;
           } else {
-            if (violationType === 'UNHOOKED HARNESS') {
-              textToSpeak = 'Warning! Safety belt not attached!';
-            } else if (violationType === 'NO HELMET') {
-              textToSpeak = 'Warning! Safety helmet not worn!';
-            } else if (violationType === 'UNAUTHORIZED ACCESS') {
-              textToSpeak = 'Warning! Unauthorized access!';
-            }
+            utterance.rate = 1.1; // Slightly faster for English with Malaysian words
+            utterance.pitch = 1.1; // Slightly higher for urgency
           }
-          
-          utterance.rate = 1.0; // Normal rate for English
-          utterance.pitch = 1.0;
           utterance.volume = 1.0;
+        }
+        
+        // For rojak, always use the modified text that works better with TTS
+        if (language === 'rojak') {
+          if (violationType === 'UNHOOKED HARNESS') {
+            textToSpeak = 'WARNING! Safety harness not connected! DANGER! Bahaya!';
+          } else if (violationType === 'NO HELMET') {
+            textToSpeak = 'ATTENTION! No helmet! Please wear helmet now!';
+          } else if (violationType === 'UNAUTHORIZED ACCESS') {
+            textToSpeak = 'ALERT! Unauthorized area! Exit immediately! Keluar sekarang!';
+          }
         }
       } else {
         // English voice selection
