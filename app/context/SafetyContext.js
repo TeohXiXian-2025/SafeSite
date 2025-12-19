@@ -96,8 +96,21 @@ export const SafetyProvider = ({ children }) => {
   const [redZoneActive, setRedZoneActive] = useState(false);
   const [currentIncidentAlert, setCurrentIncidentAlert] = useState(null);
 
-  // Language Settings State
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  // Language Settings State with localStorage persistence
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedLanguage = localStorage.getItem('safesite-language');
+      return savedLanguage || 'english';
+    }
+    return 'english';
+  });
+
+  // Save language preference to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('safesite-language', selectedLanguage);
+    }
+  }, [selectedLanguage]);
 
   // Permit Management State
   const [permits, setPermits] = useState([
