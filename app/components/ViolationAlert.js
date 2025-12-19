@@ -16,7 +16,24 @@ export default function ViolationAlert() {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
-      console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+      
+      // Enhanced voice logging for debugging
+      console.log('=== VOICE DEBUGGING INFO ===');
+      console.log('Browser:', navigator.userAgent);
+      console.log('Platform:', navigator.platform);
+      console.log('Total voices available:', voices.length);
+      console.log('All voices:');
+      voices.forEach((voice, index) => {
+        console.log(`${index + 1}. ${voice.name} (${voice.lang}) - Default: ${voice.default}`);
+      });
+      
+      // Log preferred voices for each language
+      const malayVoices = voices.filter(v => v.lang.includes('ms') || v.lang.includes('id'));
+      const englishVoices = voices.filter(v => v.lang.includes('en'));
+      
+      console.log('Malay/Indonesian voices:', malayVoices.map(v => v.name));
+      console.log('English voices:', englishVoices.map(v => v.name));
+      console.log('=== END VOICE DEBUGGING ===');
     };
 
     loadVoices();
@@ -139,8 +156,8 @@ export default function ViolationAlert() {
           
           utterance.text = malayMessage;
           utterance.lang = 'ms-MY';
-          utterance.rate = 0.9;
-          utterance.pitch = 1.1;
+          utterance.rate = 0.95; // Slightly adjusted for better clarity
+          utterance.pitch = 1.05; // More natural pitch
       } else if (selectedLanguage === 'rojak') {
         // For Bahasa Rojak, override with natural Malaysian-style urgent speech
         // Extract worker name from the message
@@ -162,8 +179,8 @@ export default function ViolationAlert() {
         
         utterance.text = rojakMessage;
         utterance.lang = 'ms-MY';
-        utterance.rate = 1.1;
-        utterance.pitch = 1.2;
+        utterance.rate = 1.05; // Slightly slower for better comprehension
+        utterance.pitch = 1.1; // More natural but still urgent
         utterance.volume = 1.0;
         
         console.log('ViolationAlert - Rojak message (working version):', rojakMessage);
@@ -172,8 +189,8 @@ export default function ViolationAlert() {
         // English
         utterance.text = message;
         utterance.lang = 'en-US';
-        utterance.rate = 1.2;
-        utterance.pitch = 1.2;
+        utterance.rate = 1.1; // Slightly slower for better clarity
+        utterance.pitch = 1.1; // More natural pitch
       }
       
       utterance.volume = 1.0;
@@ -191,24 +208,24 @@ export default function ViolationAlert() {
           voice.name.includes('Indonesian') ||
           voice.name.includes('Malaysia')
         );
-        // Fallback to any English voice if no Malay voice
+        
+        // If no Malay voice, try high-quality English voices that work well across platforms
         if (!preferredVoice) {
           preferredVoice = voices.find(voice =>
-            voice.lang.includes('en') &&
-            (voice.name.includes('Female') || voice.name.includes('Microsoft'))
-          );
+            (voice.lang.includes('en-US') || voice.lang.includes('en-GB')) &&
+            (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.name.includes('Siri'))
+          ) || voices.find(voice => voice.lang.includes('en') && voice.default);
         }
       } else {
-        // For English, use clear English voices
+        // For English, prioritize cross-platform compatible voices
         preferredVoice = voices.find(voice =>
-          voice.name.includes('Female') ||
-          voice.name.includes('Samantha') ||
+          (voice.name.includes('Google') && voice.lang.includes('en')) ||
+          (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
+          (voice.name.includes('Siri') && voice.lang.includes('en')) ||
           voice.name.includes('Karen') ||
-          voice.name.includes('Zira') ||
-          voice.name.includes('Microsoft Hazel') ||
-          voice.name.includes('Microsoft Zira') ||
-          (voice.lang.includes('en') && voice.name.includes('Microsoft'))
-        );
+          voice.name.includes('Samantha') ||
+          voice.name.includes('Zira')
+        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       }
       
       if (preferredVoice) {

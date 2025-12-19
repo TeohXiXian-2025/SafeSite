@@ -437,7 +437,7 @@ export default function WorkerDigitalPassport() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Select appropriate voice
+      // Select appropriate voice with better cross-platform compatibility
       const voices = availableVoices;
       let preferredVoice;
       
@@ -447,18 +447,26 @@ export default function WorkerDigitalPassport() {
           voice.lang.includes('hi') ||
           voice.name.includes('Bengali') ||
           voice.name.includes('Hindi')
-        );
+        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       } else if (lang === 'ms') {
         preferredVoice = voices.find(voice =>
           voice.lang.includes('ms') ||
-          voice.lang.includes('Malay') ||
-          voice.name.includes('Malay')
-        );
+          voice.lang.includes('id') ||
+          voice.name.includes('Malay') ||
+          voice.name.includes('Indonesian')
+        ) || voices.find(voice =>
+          (voice.lang.includes('en-US') || voice.lang.includes('en-GB')) &&
+          (voice.name.includes('Google') || voice.name.includes('Microsoft'))
+        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       } else {
         preferredVoice = voices.find(voice =>
-          voice.lang.includes('en') &&
-          (voice.name.includes('Female') || voice.name.includes('Microsoft'))
-        );
+          (voice.name.includes('Google') && voice.lang.includes('en')) ||
+          (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
+          (voice.name.includes('Siri') && voice.lang.includes('en')) ||
+          voice.name.includes('Karen') ||
+          voice.name.includes('Samantha') ||
+          voice.name.includes('Zira')
+        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       }
       
       if (preferredVoice) {
