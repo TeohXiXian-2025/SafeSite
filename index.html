@@ -1090,14 +1090,18 @@
         
         function toggleRecording() {
             isRecording = !isRecording;
-            event.target.textContent = isRecording ? '⏹️ Stop' : '🔴 Record';
-            event.target.style.background = isRecording ? '#dc2626' : '#FFB800';
-            event.target.style.color = isRecording ? 'white' : 'black';
+            if (event && event.target) {
+                event.target.textContent = isRecording ? '⏹️ Stop' : '🔴 Record';
+                event.target.style.background = isRecording ? '#dc2626' : '#FFB800';
+                event.target.style.color = isRecording ? 'white' : 'black';
+            }
         }
         
         function toggleMute() {
             isMuted = !isMuted;
-            event.target.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+            if (event && event.target) {
+                event.target.textContent = isMuted ? '🔇 Unmute' : '🔊 Mute';
+            }
             // In a real app, this would control the iframe audio
         }
         
@@ -1116,7 +1120,9 @@
         
         // App functions
         function performScan() {
-            const btn = event.target;
+            const btn = event && event.target ? event.target : null;
+            if (!btn) return;
+            
             btn.textContent = '🔄 Scanning...';
             btn.disabled = true;
             
@@ -1151,7 +1157,9 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Show language change notification
             const langNames = {
