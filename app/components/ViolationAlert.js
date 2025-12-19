@@ -255,7 +255,7 @@ export default function ViolationAlert() {
       // Cancel any ongoing speech
       window.speechSynthesis.cancel();
       
-      // Simple message selection
+      // Simple message selection - FIXED: Set text before creating utterance
       let textToSpeak = message;
       let langToUse = 'en-US';
       
@@ -267,7 +267,7 @@ export default function ViolationAlert() {
         } else if (violationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'AMARAN: Akses tanpa kebenaran';
         }
-        langToUse = 'ms-MY';
+        langToUse = 'id-ID'; // Use Indonesian voice for Malay text (best available)
       } else if (language === 'rojak') {
         // Malaysian slang optimized for Indonesian TTS compatibility
         if (violationType === 'UNHOOKED HARNESS') {
@@ -314,17 +314,6 @@ export default function ViolationAlert() {
             utterance.pitch = 1.1; // Slightly higher for urgency
           }
           utterance.volume = 1.0;
-        }
-        
-        // For rojak, use Malaysian slang optimized for Indonesian TTS
-        if (language === 'rojak') {
-          if (violationType === 'UNHOOKED HARNESS') {
-            textToSpeak = 'Woi! Tali safety tidak terikat lagi! Bahaya sekali! Cepat ikat!';
-          } else if (violationType === 'NO HELMET') {
-            textToSpeak = 'Eh! Tidak pakai helmet? Bisa jatuh kepala! Pakai sekarang juga!';
-          } else if (violationType === 'UNAUTHORIZED ACCESS') {
-            textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
-          }
         }
       } else {
         // English voice selection
