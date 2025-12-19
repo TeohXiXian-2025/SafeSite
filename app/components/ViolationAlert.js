@@ -155,9 +155,9 @@ export default function ViolationAlertFIXED() {
         utterance.lang = 'en-US'; // English
       }
       
-      // URGENT SETTINGS - Slowed down for better comprehension
+      // URGENT SETTINGS - Faster for Malay/Rojak
       if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
-        utterance.rate = 0.9; // Much slower for Malay/Rojak clarity
+        utterance.rate = 1.2; // Faster for Malay/Rojak
         utterance.pitch = 0.7; // Male voice but not too low
       } else if (selectedLanguage === 'bengali') {
         utterance.rate = 1.0; // Slower for Bengali comprehension
