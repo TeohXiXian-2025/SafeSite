@@ -278,6 +278,16 @@ export default function ViolationAlert() {
           textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
         }
         langToUse = 'id-ID'; // Use Indonesian for better compatibility
+      } else if (language === 'bengali') {
+        // Bengali text selection
+        if (violationType === 'UNHOOKED HARNESS') {
+          textToSpeak = 'সতর্কতা! নিরাপত্তা বেল্ট বাঁধা হয়নি!';
+        } else if (violationType === 'NO HELMET') {
+          textToSpeak = 'সতর্কতা! হেলমেট পরা হয়নি!';
+        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+          textToSpeak = 'সতর্কতা! অননুমোদিত প্রবেশ!';
+        }
+        langToUse = 'hi-IN'; // Use Hindi as primary fallback
       }
       
       // Create utterance
@@ -287,7 +297,7 @@ export default function ViolationAlert() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Simplified and more direct voice selection
+      // Enhanced voice selection for all languages
       if (language === 'malay' || language === 'rojak') {
         // Always try to use the best available voice, but prioritize clarity
         const bestMalayVoice = selectBestMalayVoice(availableVoices);
@@ -314,6 +324,42 @@ export default function ViolationAlert() {
             utterance.pitch = 1.1; // Slightly higher for urgency
           }
           utterance.volume = 1.0;
+        }
+      } else if (language === 'bengali') {
+        // Bengali voice selection (same logic as WorkerDigitalPassport)
+        const voices = availableVoices;
+        let preferredVoice = null;
+        
+        // Priority 1: Bengali voices
+        preferredVoice = voices.find(voice => voice.lang.includes('bn'));
+        
+        // Priority 2: Hindi voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('hi'));
+        }
+        
+        // Priority 3: Indonesian voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('id'));
+        }
+        
+        // Priority 4: Indian English voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('en-IN') ||
+            voice.name.toLowerCase().includes('india')
+          );
+        }
+        
+        // Priority 5: Default English voice
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('en') && voice.default);
+        }
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+          utterance.lang = preferredVoice.lang;
+          console.log('Selected voice for Bengali:', preferredVoice.name, '(', preferredVoice.lang, ')');
         }
       } else {
         // English voice selection

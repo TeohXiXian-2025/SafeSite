@@ -507,7 +507,7 @@ export default function WorkerDigitalPassport() {
       let preferredVoice;
       
       if (lang === 'bn') {
-        // Enhanced Bengali voice selection
+        // Enhanced Bengali voice selection based on available voices
         console.log('=== BENGALI VOICE SELECTION ===');
         const bengaliVoices = voices.filter(v =>
           v.lang.includes('bn') ||
@@ -522,12 +522,17 @@ export default function WorkerDigitalPassport() {
         // Priority 1: Bengali voices
         preferredVoice = voices.find(voice => voice.lang.includes('bn'));
         
-        // Priority 2: Hindi voices (often available in browsers)
+        // Priority 2: Hindi voices (Google Hindi is available and works well)
         if (!preferredVoice) {
           preferredVoice = voices.find(voice => voice.lang.includes('hi'));
         }
         
-        // Priority 3: Indian English voices
+        // Priority 3: Indonesian voices (similar phonetic patterns to Bengali)
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice => voice.lang.includes('id'));
+        }
+        
+        // Priority 4: Indian English voices
         if (!preferredVoice) {
           preferredVoice = voices.find(voice =>
             voice.lang.includes('en-IN') ||
@@ -535,7 +540,7 @@ export default function WorkerDigitalPassport() {
           );
         }
         
-        // Priority 4: Any voice with Indian/Bengali in name
+        // Priority 5: Any voice with Indian/Bengali in name
         if (!preferredVoice) {
           preferredVoice = voices.find(voice =>
             voice.name.toLowerCase().includes('bengali') ||
@@ -544,9 +549,22 @@ export default function WorkerDigitalPassport() {
           );
         }
         
-        // Priority 5: Default English voice
+        // Priority 6: Default English voice
         if (!preferredVoice) {
           preferredVoice = voices.find(voice => voice.lang.includes('en') && voice.default);
+        }
+        
+        // Set language based on selected voice
+        if (preferredVoice) {
+          if (preferredVoice.lang.includes('hi')) {
+            utterance.lang = 'hi-IN';
+            console.log('Using Hindi voice for Bengali text');
+          } else if (preferredVoice.lang.includes('id')) {
+            utterance.lang = 'id-ID';
+            console.log('Using Indonesian voice for Bengali text');
+          } else {
+            utterance.lang = preferredVoice.lang;
+          }
         }
         
         console.log('Selected Bengali voice:', preferredVoice ? `${preferredVoice.name} (${preferredVoice.lang})` : 'None');
