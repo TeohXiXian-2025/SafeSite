@@ -155,15 +155,15 @@ export default function ViolationAlertFIXED() {
         utterance.lang = 'en-US'; // English
       }
       
-      // URGENT SETTINGS - Adjusted for different languages
+      // URGENT SETTINGS - Slowed down for better comprehension
       if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
-        utterance.rate = 1.2; // Slightly slower for Malay/Rojak clarity
+        utterance.rate = 0.9; // Much slower for Malay/Rojak clarity
         utterance.pitch = 0.7; // Male voice but not too low
       } else if (selectedLanguage === 'bengali') {
-        utterance.rate = 1.4; // Fast for Bengali
+        utterance.rate = 1.0; // Slower for Bengali comprehension
         utterance.pitch = 0.6; // Lower pitch for male voice
       } else {
-        utterance.rate = 1.6; // Fastest for English
+        utterance.rate = 1.2; // Moderate speed for English
         utterance.pitch = 0.6; // Lower pitch for male voice
       }
       utterance.volume = 1.0; // Maximum volume
