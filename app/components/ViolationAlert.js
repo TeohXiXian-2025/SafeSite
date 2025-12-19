@@ -269,15 +269,15 @@ export default function ViolationAlert() {
         }
         langToUse = 'ms-MY';
       } else if (language === 'rojak') {
-        // More explicit Malaysian slang that works better with TTS
+        // Authentic Malaysian construction site slang
         if (violationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'WARNING! Safety harness not connected! DANGER! Bahaya!';
+          textToSpeak = 'Woi! Tali safety tak kait lagi ke? Gila bahaya ni! Cepat kait!';
         } else if (violationType === 'NO HELMET') {
-          textToSpeak = 'ATTENTION! No helmet! Please wear helmet now!';
+          textToSpeak = 'Eh! Tak pakai helmet ke? Boleh jatuh kepala ni! Pakai sekarang!';
         } else if (violationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'ALERT! Unauthorized area! Exit immediately! Keluar sekarang!';
+          textToSpeak = 'Hei! Apa kau buat sini? Ini kawasan larang! Keluar dari sini!';
         }
-        langToUse = 'en-US'; // Force English for better compatibility
+        langToUse = 'ms-MY'; // Use Malay for authentic slang
       }
       
       // Create utterance
@@ -316,14 +316,14 @@ export default function ViolationAlert() {
           utterance.volume = 1.0;
         }
         
-        // For rojak, always use the modified text that works better with TTS
+        // For rojak, use authentic Malaysian slang
         if (language === 'rojak') {
           if (violationType === 'UNHOOKED HARNESS') {
-            textToSpeak = 'WARNING! Safety harness not connected! DANGER! Bahaya!';
+            textToSpeak = 'Woi! Tali safety tak kait lagi ke? Gila bahaya ni! Cepat kait!';
           } else if (violationType === 'NO HELMET') {
-            textToSpeak = 'ATTENTION! No helmet! Please wear helmet now!';
+            textToSpeak = 'Eh! Tak pakai helmet ke? Boleh jatuh kepala ni! Pakai sekarang!';
           } else if (violationType === 'UNAUTHORIZED ACCESS') {
-            textToSpeak = 'ALERT! Unauthorized area! Exit immediately! Keluar sekarang!';
+            textToSpeak = 'Hei! Apa kau buat sini? Ini kawasan larang! Keluar dari sini!';
           }
         }
       } else {
