@@ -26,7 +26,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function WorkerDigitalPassport() {
+export default function WorkerDigitalPassportFIXED() {
   const {
     simulateRedZone,
     redZoneActive,
@@ -42,7 +42,6 @@ export default function WorkerDigitalPassport() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [availableVoices, setAvailableVoices] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
   const [speechError, setSpeechError] = useState(null);
@@ -68,67 +67,29 @@ export default function WorkerDigitalPassport() {
     siteAssigned: 'Kuala Lumpur Tower Project'
   };
 
-  // Helper function to select best Malay voice
-  const selectBestMalayVoice = (voices) => {
-    // Priority 1: Malaysian voices
-    let voice = voices.find(v => v.lang.includes('ms-MY') || v.lang.includes('ms-ID'));
-    if (voice) return voice;
-    
-    // Priority 2: Indonesian voices
-    voice = voices.find(v => v.lang.includes('id-ID'));
-    if (voice) return voice;
-    
-    // Priority 3: Any Malay/Indonesian voice
-    voice = voices.find(v => v.lang.includes('ms') || v.lang.includes('id'));
-    if (voice) return voice;
-    
-    // Priority 4: Google voices with Malay in name
-    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('google'));
-    if (voice) return voice;
-    
-    // Priority 5: Microsoft voices with Malay in name
-    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('microsoft'));
-    if (voice) return voice;
-    
-    return null;
-  };
-
-  // Load voices when component mounts and check speech support
+  // Load voices when component mounts
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
-      setAvailableVoices(voices);
+      console.log('=== VOICES LOADED ===');
+      console.log('Total voices:', voices.length);
       
-      // Debug voice availability
-      console.log('=== WORKER PASSPORT VOICE DEBUG ===');
-      const malayVoices = voices.filter(v => v.lang.includes('ms') || v.lang.includes('id'));
-      console.log('Malay/Indonesian voices available:', malayVoices.length);
-      malayVoices.forEach(v => console.log(`- ${v.name} (${v.lang})`));
-      const bestVoice = selectBestMalayVoice(voices);
-      console.log('Best Malay voice selected:', bestVoice ? `${bestVoice.name} (${bestVoice.lang})` : 'None');
-      console.log('=== END WORKER PASSPORT VOICE DEBUG ===');
+      // Log key voices we need
+      const indonesianVoice = voices.find(v => v.lang.includes('id-ID'));
+      const hindiVoice = voices.find(v => v.lang.includes('hi-IN'));
+      const englishVoice = voices.find(v => v.lang.includes('en-US') && v.default);
+      
+      console.log('Indonesian voice:', indonesianVoice ? indonesianVoice.name : 'NOT FOUND');
+      console.log('Hindi voice:', hindiVoice ? hindiVoice.name : 'NOT FOUND');
+      console.log('English voice:', englishVoice ? englishVoice.name : 'NOT FOUND');
+      console.log('=== END VOICES ===');
     };
 
-    // Check if speech synthesis is supported
-    if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not supported in this browser');
-      setSpeechError('Speech synthesis not supported in this browser');
-      return;
-    }
-
-    // Check if we're on HTTPS (GitHub Pages)
-    if (window.location.protocol === 'https:') {
-      console.log('Running on HTTPS - speech synthesis requires user interaction');
-      setSpeechError('Click the red zone button to enable speech alerts');
-    } else {
-      console.log('Running on HTTP - speech synthesis should work automatically');
-      setSpeechPermissionGranted(true);
-    }
-
-    loadVoices();
-    
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
     }
   }, []);
 
@@ -160,7 +121,7 @@ export default function WorkerDigitalPassport() {
     };
 
     generateQRCode();
-  }, []); // Empty dependency array - run only once
+  }, []);
 
   // Translations for all UI text
   const translations = {
@@ -364,56 +325,6 @@ export default function WorkerDigitalPassport() {
       active: 'Active / Aktif',
       completed: 'Completed / Selesai',
       rejected: 'Rejected / Ditolak'
-    },
-    malayPlusEnglish: {
-      digitalPassport: 'Pasport Digital',
-      scanForVerification: 'Imbas untuk Pengesahan',
-      workerInfo: 'Maklumat Pekerja',
-      role: 'Peranan',
-      department: 'Jabatan',
-      phone: 'Telefon',
-      emergency: 'Kecemasan',
-      certifications: 'Sijil',
-      sopLibrary: 'Pustaka SOP',
-      ladderSafety: 'Keselamatan Tangga',
-      craneOperations: 'Operasi Kren',
-      electricalSafety: 'Keselamatan Elektrik',
-      chemicalHandling: 'Pengendalian Kimia',
-      quickActions: 'Tindakan Pantas',
-      emergencyCall: 'Panggilan Kecemasan',
-      supervisorContact: 'Hubungi Penyelia',
-      siteMap: 'Peta Tapak',
-      redZoneAlert: 'Amaran Zon Merah',
-      playing: 'Dimainkan...',
-      paused: 'Dijeda',
-      speaking: 'Bercakap...',
-      settings: 'Tetapan',
-      language: 'Bahasa',
-      selectLanguage: 'Pilih Bahasa',
-      english: 'English',
-      malay: 'Bahasa Melayu',
-      bengali: 'বাংলা (Bengali)',
-      close: 'Tutup',
-      save: 'Simpan',
-      requestPermit: 'Mohon Permit',
-      permitType: 'Jenis Permit',
-      location: 'Lokasi',
-      description: 'Keterangan',
-      duration: 'Tempoh',
-      riskLevel: 'Tahap Risiko',
-      submitRequest: 'Hantar Permohonan',
-      hotWork: 'Kerja Panas',
-      confinedSpace: 'Ruang Terhad',
-      electricalWork: 'Kerja Elektrik',
-      workingAtHeight: 'Kerja di Ketinggian',
-      low: 'Rendah',
-      medium: 'Sederhana',
-      high: 'Tinggi',
-      myPermits: 'Permit Saya',
-      pending: 'Menunggu',
-      active: 'Aktif',
-      completed: 'Selesai',
-      rejected: 'Ditolak'
     }
   };
 
@@ -470,202 +381,106 @@ export default function WorkerDigitalPassport() {
     }
   ];
 
-  const speakSOPContent = (text, lang = 'en') => {
+  // SIMPLIFIED SPEECH FUNCTION
+  const speakText = (text, language) => {
+    console.log('🎤 SPEAK:', text, 'LANG:', language);
+    
     if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not supported');
-      setSpeechError('Speech synthesis not supported in this browser');
+      console.error('❌ Speech not supported');
+      setSpeechError('Speech not supported');
       return;
     }
 
-    // Check if we have permission (user interaction) for HTTPS
-    if (window.location.protocol === 'https:' && !speechPermissionGranted) {
-      console.log('Speech synthesis requires user interaction on HTTPS');
-      setSpeechError('Click any speech button to enable speech');
-      return;
-    }
+    // Grant permission on user interaction
+    setSpeechPermissionGranted(true);
+    setSpeechError(null);
 
     try {
+      // Cancel any previous speech
       window.speechSynthesis.cancel();
       
+      // Create utterance
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // Set language based on parameter
-      if (lang === 'bn') {
-        utterance.lang = 'bn-IN';
-      } else if (lang === 'ms') {
-        utterance.lang = 'ms-MY';
+      // SIMPLE LANGUAGE MAPPING
+      if (language === 'malay' || language === 'rojak') {
+        utterance.lang = 'id-ID'; // Indonesian for Malay
+      } else if (language === 'bengali') {
+        utterance.lang = 'hi-IN'; // Hindi for Bengali
       } else {
-        utterance.lang = 'en-US';
+        utterance.lang = 'en-US'; // English
       }
       
-      utterance.rate = 0.9;
+      // Simple settings
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Enhanced voice selection for consistent speech across platforms
-      const voices = availableVoices;
-      let preferredVoice;
+      // SIMPLE VOICE SELECTION
+      const voices = window.speechSynthesis.getVoices();
+      let selectedVoice = null;
       
-      if (lang === 'bn') {
-        // Enhanced Bengali voice selection based on available voices
-        console.log('=== BENGALI VOICE SELECTION ===');
-        const bengaliVoices = voices.filter(v =>
-          v.lang.includes('bn') ||
-          v.lang.includes('hi') ||
-          v.name.toLowerCase().includes('bengali') ||
-          v.name.toLowerCase().includes('hindi') ||
-          v.name.toLowerCase().includes('india')
-        );
-        console.log('Bengali/Hindi voices found:', bengaliVoices.length);
-        bengaliVoices.forEach(v => console.log(`- ${v.name} (${v.lang})`));
-        
-        // Priority 1: Bengali voices
-        preferredVoice = voices.find(voice => voice.lang.includes('bn'));
-        
-        // Priority 2: Hindi voices (Google Hindi is available and works well)
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('hi'));
-        }
-        
-        // Priority 3: Indonesian voices (similar phonetic patterns to Bengali)
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('id'));
-        }
-        
-        // Priority 4: Indian English voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('en-IN') ||
-            voice.name.toLowerCase().includes('india')
-          );
-        }
-        
-        // Priority 5: Any voice with Indian/Bengali in name
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.name.toLowerCase().includes('bengali') ||
-            voice.name.toLowerCase().includes('hindi') ||
-            voice.name.toLowerCase().includes('india')
-          );
-        }
-        
-        // Priority 6: Default English voice
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('en') && voice.default);
-        }
-        
-        // Set language based on selected voice
-        if (preferredVoice) {
-          if (preferredVoice.lang.includes('hi')) {
-            utterance.lang = 'hi-IN';
-            console.log('Using Hindi voice for Bengali text');
-          } else if (preferredVoice.lang.includes('id')) {
-            utterance.lang = 'id-ID';
-            console.log('Using Indonesian voice for Bengali text');
-          } else {
-            utterance.lang = preferredVoice.lang;
-          }
-        }
-        
-        console.log('Selected Bengali voice:', preferredVoice ? `${preferredVoice.name} (${preferredVoice.lang})` : 'None');
-        console.log('=== END BENGALI VOICE SELECTION ===');
-        
-      } else if (lang === 'ms') {
-        // Use the same voice selection logic as ViolationAlert
-        const bestMalayVoice = selectBestMalayVoice(voices);
-        
-        if (bestMalayVoice) {
-          preferredVoice = bestMalayVoice;
-          utterance.lang = bestMalayVoice.lang;
-          console.log('Selected Malay voice for SOP:', bestMalayVoice.name, '(', bestMalayVoice.lang, ')');
-          
-          // Adjust speech parameters for more natural Malaysian accent
-          utterance.rate = 0.95; // Slightly slower for clarity
-          utterance.pitch = 1.0; // Normal pitch
-          utterance.volume = 1.0; // Full volume
-        } else {
-          // Fallback to English voice
-          console.log('No Malay voice found for SOP, using English fallback');
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('en-US') &&
-            (voice.name.toLowerCase().includes('google') ||
-             voice.name.toLowerCase().includes('microsoft'))
-          ) || voices.find(voice => voice.default && voice.lang.includes('en'));
-          
-          if (preferredVoice) {
-            utterance.lang = 'en-US';
-          }
-          
-          utterance.rate = 1.0;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
-        }
-        
+      if (language === 'malay' || language === 'rojak') {
+        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+      } else if (language === 'bengali') {
+        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
       } else {
-        // English voice selection
-        preferredVoice = voices.find(voice =>
-          (voice.name.includes('Google') && voice.lang.includes('en')) ||
-          (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
-          (voice.name.includes('Siri') && voice.lang.includes('en')) ||
-          voice.name.includes('Karen') ||
-          voice.name.includes('Samantha') ||
-          voice.name.includes('Zira')
-        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
+        selectedVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('en-US') && v.default);
       }
       
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-        console.log('Selected voice for', lang, ':', preferredVoice.name, '(', preferredVoice.lang, ')');
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log('✅ Voice:', selectedVoice.name);
       } else {
-        console.log('No suitable voice found for', lang, ', using default');
+        console.log('⚠️ Using default voice');
       }
       
+      // Event handlers
       utterance.onstart = () => {
+        console.log('✅ Speech started');
         setIsSpeaking(true);
-        setSpeechError(null);
-      };
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = (e) => {
-        setIsSpeaking(false);
-        setSpeechError('Speech error: ' + e.error);
       };
       
+      utterance.onend = () => {
+        console.log('✅ Speech ended');
+        setIsSpeaking(false);
+      };
+      
+      utterance.onerror = (e) => {
+        console.error('❌ Speech error:', e.error);
+        setIsSpeaking(false);
+        setSpeechError('Speech failed: ' + e.error);
+      };
+      
+      // Speak!
       window.speechSynthesis.speak(utterance);
+      
     } catch (error) {
-      console.error('Speech function error:', error);
+      console.error('❌ Speech error:', error);
       setIsSpeaking(false);
       setSpeechError('Speech error: ' + error.message);
     }
   };
 
   const handlePlayAudio = (sop) => {
-    // Grant permission on user interaction
-    setSpeechPermissionGranted(true);
-    setSpeechError(null);
-    
     setSelectedSOP(sop);
     setIsPlaying(true);
     setAudioProgress(0);
 
-    // Speak the content based on selected language
+    // Get text based on language
     let textToSpeak = sop.content.english;
-    let langToUse = 'en';
+    let langToUse = 'english';
     
-    console.log('Playing SOP for language:', selectedLanguage);
-    
-    if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
+    if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
       textToSpeak = sop.content.malay || sop.content.english;
-      langToUse = 'ms';
-      console.log('Using Malay text:', textToSpeak);
+      langToUse = 'malay';
     } else if (selectedLanguage === 'bengali') {
       textToSpeak = sop.content.bengali;
-      langToUse = 'bn';
-      console.log('Using Bengali text:', textToSpeak);
-    } else {
-      console.log('Using English text:', textToSpeak);
+      langToUse = 'bengali';
     }
     
-    speakSOPContent(textToSpeak, langToUse);
+    speakText(textToSpeak, langToUse);
 
     // Simulate audio progress
     const interval = setInterval(() => {
@@ -689,112 +504,20 @@ export default function WorkerDigitalPassport() {
   };
 
   const handleRedZoneSimulation = () => {
-    // Grant permission on user interaction
-    setSpeechPermissionGranted(true);
-    setSpeechError(null);
-    
-    // Show visual alert first
     const warningMessages = {
       english: 'RED ZONE ALERT! Evacuate Immediately!',
       malay: 'AMARAN ZON MERAH! Evakuasi Segera!',
       bengali: 'রেড জোন সতর্কতা! অবিলম্বে সরে যান!',
-      rojak: 'AWAS! ZON MERAH INI! SANGAT BAHAYA! LARI SEKARANG! CEPAT KELUAR!',
-      malayPlusEnglish: 'AMARAN ZON MERAH! Evakuasi Segera! RED ZONE ALERT! Evacuate Immediately!'
+      rojak: 'AWAS! ZON MERAH INI! SANGAT BAHAYA! LARI SEKARANG!'
     };
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Show browser alert immediately
+    // Show alert
     alert(message);
     
-    // Start speaking after user interaction (with a small delay to ensure alert is processed)
-    setTimeout(() => {
-      try {
-        if ('speechSynthesis' in window) {
-          // Cancel any previous speech
-          window.speechSynthesis.cancel();
-          
-          const utterance = new SpeechSynthesisUtterance(message);
-          
-          // Set language based on selection
-          let langToUse = 'en-US';
-          if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
-            langToUse = 'ms-MY';
-          } else if (selectedLanguage === 'bengali') {
-            langToUse = 'bn-IN';
-          }
-          
-          utterance.lang = langToUse;
-          utterance.rate = 1.4; // Faster for more urgency
-          utterance.pitch = 1.3; // Higher pitch for emergency
-          utterance.volume = 1.0; // Maximum volume for urgency
-          
-          // Enhanced voice selection for red zone alerts
-          const voices = availableVoices;
-          let preferredVoice = null;
-          
-          if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
-            // Use the same voice selection logic as other functions
-            preferredVoice = selectBestMalayVoice(voices);
-            
-            if (preferredVoice) {
-              utterance.voice = preferredVoice;
-              utterance.lang = preferredVoice.lang;
-              console.log('Selected red zone Malay voice:', preferredVoice.name);
-            }
-          } else if (selectedLanguage === 'bengali') {
-            // Bengali voice selection (same logic as SOP)
-            preferredVoice = voices.find(voice => voice.lang.includes('bn')) ||
-                           voices.find(voice => voice.lang.includes('hi')) ||
-                           voices.find(voice => voice.lang.includes('en-IN')) ||
-                           voices.find(voice => voice.name.toLowerCase().includes('bengali')) ||
-                           voices.find(voice => voice.name.toLowerCase().includes('hindi')) ||
-                           voices.find(voice => voice.default && voice.lang.includes('en'));
-            
-            if (preferredVoice) {
-              utterance.voice = preferredVoice;
-              utterance.lang = preferredVoice.lang;
-              console.log('Selected red zone Bengali voice:', preferredVoice.name);
-            }
-          } else {
-            // English voice selection
-            preferredVoice = voices.find(voice =>
-              (voice.name.includes('Google') && voice.lang.includes('en')) ||
-              (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
-              (voice.name.includes('Siri') && voice.lang.includes('en')) ||
-              voice.name.includes('Karen') ||
-              voice.name.includes('Samantha') ||
-              voice.name.includes('Zira')
-            ) || voices.find(voice => voice.lang.includes('en') && voice.default);
-            
-            if (preferredVoice) {
-              utterance.voice = preferredVoice;
-              console.log('Selected red zone English voice:', preferredVoice.name);
-            }
-          }
-          
-          utterance.onstart = () => {
-            console.log('Red zone alert speech started for language:', selectedLanguage);
-            setIsSpeaking(true);
-          };
-          utterance.onend = () => {
-            console.log('Red zone alert speech ended');
-            setIsSpeaking(false);
-          };
-          utterance.onerror = (e) => {
-            console.error('Red zone alert speech error:', e);
-            setIsSpeaking(false);
-            setSpeechError('Speech error: ' + e.error);
-          };
-          
-          // Speak after user interaction
-          window.speechSynthesis.speak(utterance);
-        }
-      } catch (error) {
-        console.error('Speech not available:', error);
-        setSpeechError('Speech not available: ' + error.message);
-      }
-    }, 100); // Small delay to ensure alert is processed
+    // Speak the alert
+    speakText(message, selectedLanguage);
   };
 
   const handleLanguageChange = (language) => {
@@ -807,7 +530,6 @@ export default function WorkerDigitalPassport() {
   };
 
   const handleSupervisorContact = () => {
-    // Find supervisor for current worker's site
     const supervisor = workers.find(w =>
       w.role === 'Site Supervisor' &&
       w.siteAssigned === workerInfo.siteAssigned
@@ -818,7 +540,6 @@ export default function WorkerDigitalPassport() {
   };
 
   const handleSiteMap = () => {
-    // Open maps with site location (simulated)
     const site = sites.find(s => s.name === workerInfo.siteAssigned);
     if (site) {
       window.open(`https://maps.google.com/?q=${site.location}`);
@@ -932,7 +653,6 @@ export default function WorkerDigitalPassport() {
                 {t.scanForVerification}
               </h3>
               
-              {/* Generated QR Code */}
               <div className="w-48 h-48 mx-auto bg-white p-3 rounded-lg shadow-lg">
                 {qrCodeUrl ? (
                   <img
@@ -1000,13 +720,8 @@ export default function WorkerDigitalPassport() {
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-white font-semibold text-sm">{selectedSOP.title}</h4>
                     <button
-                      onClick={isPlaying ? handlePauseAudio : () => {
-                        setSpeechPermissionGranted(true);
-                        setSpeechError(null);
-                        handlePlayAudio(selectedSOP);
-                      }}
+                      onClick={isPlaying ? handlePauseAudio : () => handlePlayAudio(selectedSOP)}
                       className="p-2 bg-construction-yellow rounded-full text-black"
-                      title={speechPermissionGranted ? (isPlaying ? "Pause" : "Play") : "Click to enable speech"}
                     >
                       {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </button>
@@ -1036,12 +751,7 @@ export default function WorkerDigitalPassport() {
                     )}
                     <div className="flex space-x-1">
                       <button
-                        onClick={() => {
-                          setSpeechPermissionGranted(true);
-                          setSpeechError(null);
-                          console.log('Manual English button clicked');
-                          speakSOPContent(selectedSOP.content.english, 'en');
-                        }}
+                        onClick={() => speakText(selectedSOP.content.english, 'english')}
                         className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                         title="Play in English"
                       >
@@ -1049,12 +759,7 @@ export default function WorkerDigitalPassport() {
                       </button>
                       {selectedSOP.content.bengali && (
                         <button
-                          onClick={() => {
-                            setSpeechPermissionGranted(true);
-                            setSpeechError(null);
-                            console.log('Manual Bengali button clicked');
-                            speakSOPContent(selectedSOP.content.bengali, 'bn');
-                          }}
+                          onClick={() => speakText(selectedSOP.content.bengali, 'bengali')}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                           title="Play in Bengali"
                         >
@@ -1063,12 +768,7 @@ export default function WorkerDigitalPassport() {
                       )}
                       {selectedSOP.content.malay && (
                         <button
-                          onClick={() => {
-                            setSpeechPermissionGranted(true);
-                            setSpeechError(null);
-                            console.log('Manual Malay button clicked');
-                            speakSOPContent(selectedSOP.content.malay, 'ms');
-                          }}
+                          onClick={() => speakText(selectedSOP.content.malay, 'malay')}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                           title="Play in Malay"
                         >
@@ -1141,7 +841,6 @@ export default function WorkerDigitalPassport() {
                 <button
                   onClick={handleRedZoneSimulation}
                   className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-all relative"
-                  title={speechPermissionGranted ? t.redZoneAlert : "Click to enable speech alerts"}
                 >
                   <AlertTriangle className="w-4 h-4 text-orange-400 mx-auto mb-1" />
                   <span className="text-xs text-orange-400 block">{t.redZoneAlert}</span>
@@ -1151,204 +850,9 @@ export default function WorkerDigitalPassport() {
                 </button>
               </div>
             </motion.div>
-
-            {/* Permit Request Section */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="space-y-3"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-construction-yellow" />
-                  {t.myPermits}
-                </h3>
-                <button
-                  onClick={() => setShowPermitModal(true)}
-                  className="px-3 py-1 bg-construction-yellow text-black text-xs rounded-full hover:bg-yellow-400 transition-colors"
-                >
-                  {t.requestPermit}
-                </button>
-              </div>
-              
-              {/* Worker's Permits List */}
-              <div className="space-y-2">
-                {getWorkerPermits().slice(0, 3).map((permit) => (
-                  <div key={permit.id} className="bg-dark-bg border border-dark-border rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white text-sm font-semibold">{permit.type}</span>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        permit.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                        permit.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                        permit.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-red-500/20 text-red-400'
-                      }`}>
-                        {permit.status === 'active' ? t.active :
-                         permit.status === 'pending' ? t.pending :
-                         permit.status === 'completed' ? t.completed : t.rejected}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-400 space-y-1">
-                      <div className="flex items-center">
-                        <MapPin className="w-3 h-3 mr-1" />
-                        {permit.location}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {permit.expiry}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {getWorkerPermits().length === 0 && (
-                  <div className="text-center py-4 text-gray-400 text-xs">
-                    {selectedLanguage === 'english' && 'No permits requested yet'}
-                    {selectedLanguage === 'malay' && 'Belum ada permit yang dimohon'}
-                    {selectedLanguage === 'bengali' && 'এখনও কোন পারমিট অনুরোধ করা হয়নি'}
-                    {selectedLanguage === 'malayPlusEnglish' && 'Belum ada permit yang dimohon'}
-                  </div>
-                )}
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>
-
-      {/* Permit Request Modal */}
-      <AnimatePresence>
-        {showPermitModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowPermitModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-dark-surface border border-dark-border rounded-lg p-6 max-w-sm w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold flex items-center">
-                  <FileText className="w-4 h-4 mr-2 text-construction-yellow" />
-                  {t.requestPermit}
-                </h3>
-                <button
-                  onClick={() => setShowPermitModal(false)}
-                  className="p-1 hover:bg-dark-bg rounded transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1">{t.permitType}</label>
-                  <select
-                    value={permitForm.type}
-                    onChange={(e) => setPermitForm({...permitForm, type: e.target.value})}
-                    className="w-full p-2 bg-dark-bg border border-dark-border rounded text-white text-sm"
-                  >
-                    <option value="Hot Work">{t.hotWork}</option>
-                    <option value="Confined Space">{t.confinedSpace}</option>
-                    <option value="Electrical Work">{t.electricalWork}</option>
-                    <option value="Working at Height">{t.workingAtHeight}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1">{t.location}</label>
-                  <input
-                    type="text"
-                    value={permitForm.location}
-                    onChange={(e) => setPermitForm({...permitForm, location: e.target.value})}
-                    placeholder={selectedLanguage === 'english' ? 'Enter work location' :
-                               selectedLanguage === 'malay' || selectedLanguage === 'malayPlusEnglish' ? 'Masukkan lokasi kerja' :
-                               'কাজের স্থান লিখুন'}
-                    className="w-full p-2 bg-dark-bg border border-dark-border rounded text-white text-sm placeholder-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1">{t.description}</label>
-                  <textarea
-                    value={permitForm.description}
-                    onChange={(e) => setPermitForm({...permitForm, description: e.target.value})}
-                    placeholder={selectedLanguage === 'english' ? 'Describe the work to be performed' :
-                               selectedLanguage === 'malay' || selectedLanguage === 'malayPlusEnglish' ? 'Huraikan kerja yang akan dilakukan' :
-                               'সম্পাদন করার কাজ বর্ণনা করুন'}
-                    rows={3}
-                    className="w-full p-2 bg-dark-bg border border-dark-border rounded text-white text-sm placeholder-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1">{t.duration}</label>
-                  <select
-                    value={permitForm.duration}
-                    onChange={(e) => setPermitForm({...permitForm, duration: e.target.value})}
-                    className="w-full p-2 bg-dark-bg border border-dark-border rounded text-white text-sm"
-                  >
-                    <option value="1 hour">1 hour</option>
-                    <option value="2 hours">2 hours</option>
-                    <option value="4 hours">4 hours</option>
-                    <option value="8 hours">8 hours</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1">{t.riskLevel}</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      onClick={() => setPermitForm({...permitForm, riskLevel: 'low'})}
-                      className={`p-2 rounded text-xs transition-all ${
-                        permitForm.riskLevel === 'low'
-                          ? 'bg-green-500/20 border border-green-500 text-green-400'
-                          : 'bg-dark-bg border border-dark-border text-gray-400 hover:border-green-500/50'
-                      }`}
-                    >
-                      {t.low}
-                    </button>
-                    <button
-                      onClick={() => setPermitForm({...permitForm, riskLevel: 'medium'})}
-                      className={`p-2 rounded text-xs transition-all ${
-                        permitForm.riskLevel === 'medium'
-                          ? 'bg-yellow-500/20 border border-yellow-500 text-yellow-400'
-                          : 'bg-dark-bg border border-dark-border text-gray-400 hover:border-yellow-500/50'
-                      }`}
-                    >
-                      {t.medium}
-                    </button>
-                    <button
-                      onClick={() => setPermitForm({...permitForm, riskLevel: 'high'})}
-                      className={`p-2 rounded text-xs transition-all ${
-                        permitForm.riskLevel === 'high'
-                          ? 'bg-red-500/20 border border-red-500 text-red-400'
-                          : 'bg-dark-bg border border-dark-border text-gray-400 hover:border-red-500/50'
-                      }`}
-                    >
-                      {t.high}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handlePermitSubmit}
-                  disabled={!permitForm.location || !permitForm.description}
-                  className="w-full p-3 bg-construction-yellow text-black rounded font-semibold text-sm hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t.submitRequest}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Language Settings Modal */}
       <AnimatePresence>
@@ -1445,7 +949,6 @@ export default function WorkerDigitalPassport() {
                   {selectedLanguage === 'malay' && 'Tukar bahasa untuk menterjemah semua teks dan arahan suara.'}
                   {selectedLanguage === 'bengali' && 'সমস্ত পাঠ্য এবং ভয়েস নির্দেশাবলী অনুবাদ করতে ভাষা পরিবর্তন করুন।'}
                   {selectedLanguage === 'rojak' && 'Change language to translate all text and voice instructions. / Tukar bahasa untuk menterjemah semua teks dan arahan suara.'}
-                  {selectedLanguage === 'malayPlusEnglish' && 'Tukar bahasa untuk menterjemah semua teks dan arahan suara. Voice instructions will be in Malay with English text.'}
                 </p>
               </div>
             </motion.div>

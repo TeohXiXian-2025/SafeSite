@@ -5,91 +5,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSafety } from '../context/SafetyContext';
 import { AlertTriangle, X, Volume2, Speaker, Phone } from 'lucide-react';
 
-export default function ViolationAlert() {
+export default function ViolationAlertFIXED() {
   const { showAlert, alertMessage, alertViolationType, setShowAlert, selectedLanguage, getTranslatedText } = useSafety();
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [availableVoices, setAvailableVoices] = useState([]);
   const [isCalling, setIsCalling] = useState(false);
   const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
   const [speechError, setSpeechError] = useState(null);
 
-  // Helper function to select best Malay voice
-  const selectBestMalayVoice = (voices) => {
-    // Priority 1: Malaysian voices
-    let voice = voices.find(v => v.lang.includes('ms-MY') || v.lang.includes('ms-ID'));
-    if (voice) return voice;
-    
-    // Priority 2: Indonesian voices
-    voice = voices.find(v => v.lang.includes('id-ID'));
-    if (voice) return voice;
-    
-    // Priority 3: Any Malay/Indonesian voice
-    voice = voices.find(v => v.lang.includes('ms') || v.lang.includes('id'));
-    if (voice) return voice;
-    
-    // Priority 4: Google voices with Malay in name
-    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('google'));
-    if (voice) return voice;
-    
-    // Priority 5: Microsoft voices with Malay in name
-    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('microsoft'));
-    if (voice) return voice;
-    
-    return null;
-  };
-
-  // Load voices when component mounts and check speech support
+  // Load voices when component mounts
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
-      setAvailableVoices(voices);
+      console.log('=== VIOLATION ALERT VOICES ===');
+      const indonesianVoice = voices.find(v => v.lang.includes('id-ID'));
+      const hindiVoice = voices.find(v => v.lang.includes('hi-IN'));
+      const englishVoice = voices.find(v => v.lang.includes('en-US') && v.default);
       
-      // Enhanced voice logging for debugging
-      console.log('=== VOICE DEBUGGING INFO ===');
-      console.log('Browser:', navigator.userAgent);
-      console.log('Platform:', navigator.platform);
-      console.log('Protocol:', window.location.protocol);
-      console.log('Total voices available:', voices.length);
-      console.log('All voices:');
-      voices.forEach((voice, index) => {
-        console.log(`${index + 1}. ${voice.name} (${voice.lang}) - Default: ${voice.default} - Local: ${voice.localService}`);
-      });
-      
-      // Log preferred voices for each language
-      const malayVoices = voices.filter(v => v.lang.includes('ms') || v.lang.includes('id'));
-      const englishVoices = voices.filter(v => v.lang.includes('en'));
-      
-      console.log('Malay/Indonesian voices:', malayVoices.map(v => `${v.name} (${v.lang})`));
-      console.log('English voices:', englishVoices.map(v => `${v.name} (${v.lang})`));
-      
-      // Test voice selection logic
-      console.log('=== TESTING VOICE SELECTION ===');
-      const testMalayVoice = selectBestMalayVoice(voices);
-      console.log('Best Malay voice selected:', testMalayVoice ? `${testMalayVoice.name} (${testMalayVoice.lang})` : 'None found');
-      console.log('=== END VOICE DEBUGGING ===');
+      console.log('Indonesian voice:', indonesianVoice ? indonesianVoice.name : 'NOT FOUND');
+      console.log('Hindi voice:', hindiVoice ? hindiVoice.name : 'NOT FOUND');
+      console.log('English voice:', englishVoice ? englishVoice.name : 'NOT FOUND');
+      console.log('=== END VIOLATION ALERT VOICES ===');
     };
 
-    // Check if speech synthesis is supported
-    if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not supported in this browser');
-      setSpeechError('Speech synthesis not supported in this browser');
-      return;
-    }
-
-    // Check if we're on HTTPS (GitHub Pages)
-    if (window.location.protocol === 'https:') {
-      console.log('Running on HTTPS - speech synthesis requires user interaction');
-      setSpeechError('Click the speaker button to enable speech alerts');
-    } else {
-      console.log('Running on HTTP - speech synthesis should work automatically');
-      setSpeechPermissionGranted(true);
-    }
-
-    loadVoices();
-    
-    // Voices might load asynchronously, so listen for the event
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
     }
   }, []);
 
@@ -134,9 +76,6 @@ export default function ViolationAlert() {
     }
   };
 
-  // Removed the complex Malay audio alert system to prevent language switching issues
-  // Now using unified TTS approach for all languages
-
   const extractWorkerInfo = (message) => {
     // Extract worker name from alert message
     const workerMatch = message.match(/Worker:\s*([A-Za-z]+)/);
@@ -157,250 +96,115 @@ export default function ViolationAlert() {
     }, 3000);
   };
 
-  // Simple test function for debugging speech - now requires user interaction
-  const testSpeech = () => {
-    try {
-      console.log('=== BASIC SPEECH TEST ===');
-      
-      if (!('speechSynthesis' in window)) {
-        console.error('Speech synthesis NOT supported');
-        alert('Speech synthesis not supported in this browser');
-        return;
-      }
-      
-      console.log('Speech synthesis supported');
-      console.log('Voices available:', window.speechSynthesis.getVoices().length);
-      
-      // Grant permission on user interaction
-      setSpeechPermissionGranted(true);
-      setSpeechError(null);
-      
-      // Cancel any existing speech
-      window.speechSynthesis.cancel();
-      
-      // Create very simple test utterance
-      const testUtterance = new SpeechSynthesisUtterance('Test speech. Hello world.');
-      testUtterance.lang = 'en-US';
-      testUtterance.rate = 1.0;
-      testUtterance.pitch = 1.0;
-      testUtterance.volume = 1.0;
-      
-      testUtterance.onstart = () => {
-        console.log('✅ Test speech STARTED successfully');
-        setIsSpeaking(true);
-      };
-      
-      testUtterance.onend = () => {
-        console.log('✅ Test speech ENDED successfully');
-        setIsSpeaking(false);
-      };
-      
-      testUtterance.onerror = (e) => {
-        console.error('❌ Test speech FAILED:', e);
-        setIsSpeaking(false);
-        setSpeechError('Speech test failed: ' + e.error);
-      };
-      
-      // Speak
-      window.speechSynthesis.speak(testUtterance);
-      console.log('Test speech command sent');
-      
-    } catch (error) {
-      console.error('❌ Speech test error:', error);
-      setIsSpeaking(false);
-      setSpeechError('Speech test error: ' + error.message);
-    }
-    
-    console.log('=== END BASIC SPEECH TEST ===');
-  };
-
+  // SIMPLIFIED SPEECH FUNCTION
   const speakAlertMessage = (message) => {
-    console.log('ViolationAlert - speakAlertMessage called with:', message);
-    console.log('ViolationAlert - selectedLanguage:', selectedLanguage);
-    console.log('ViolationAlert - speechPermissionGranted:', speechPermissionGranted);
+    console.log('🚨 VIOLATION ALERT SPEAK:', message, 'LANG:', selectedLanguage);
     
     if (!('speechSynthesis' in window)) {
-      console.log('Speech synthesis not supported');
-      setSpeechError('Speech synthesis not supported in this browser');
+      console.error('❌ Speech not supported');
+      setSpeechError('Speech not supported');
       return;
     }
 
-    // Check if we have permission (user interaction) for HTTPS
-    if (window.location.protocol === 'https:' && !speechPermissionGranted) {
-      console.log('Speech synthesis requires user interaction on HTTPS');
-      setSpeechError('Click the speaker button to enable speech alerts');
-      return;
-    }
-    
-    // Cancel any ongoing speech immediately
-    window.speechSynthesis.cancel();
-    
-    // Speak immediately without complex timing
-    speakAlertMessageInternal(message, selectedLanguage, alertViolationType);
-  };
+    // Grant permission on user interaction
+    setSpeechPermissionGranted(true);
+    setSpeechError(null);
 
-  const speakAlertMessageInternal = (message, language, violationType) => {
     try {
-      console.log('=== SIMPLE SPEECH START ===');
-      console.log('Message:', message);
-      console.log('Language:', language);
-      console.log('Violation Type:', violationType);
-      
-      // Check if speech synthesis is available
-      if (!('speechSynthesis' in window)) {
-        console.error('Speech synthesis not supported');
-        return;
-      }
-      
-      // Cancel any ongoing speech
+      // Cancel any previous speech
       window.speechSynthesis.cancel();
       
-      // Simple message selection - FIXED: Set text before creating utterance
+      // Select text based on language and violation type
       let textToSpeak = message;
-      let langToUse = 'en-US';
       
-      if (language === 'malay') {
-        if (violationType === 'UNHOOKED HARNESS') {
+      if (selectedLanguage === 'malay') {
+        if (alertViolationType === 'UNHOOKED HARNESS') {
           textToSpeak = 'AMARAN: Tali pinggang keselamatan tidak dipasang';
-        } else if (violationType === 'NO HELMET') {
+        } else if (alertViolationType === 'NO HELMET') {
           textToSpeak = 'AMARAN: Topi keselamatan tidak dipakai';
-        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+        } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'AMARAN: Akses tanpa kebenaran';
         }
-        langToUse = 'id-ID'; // Use Indonesian voice for Malay text (best available)
-      } else if (language === 'rojak') {
-        // Malaysian slang optimized for Indonesian TTS compatibility
-        if (violationType === 'UNHOOKED HARNESS') {
+      } else if (selectedLanguage === 'rojak') {
+        if (alertViolationType === 'UNHOOKED HARNESS') {
           textToSpeak = 'Woi! Tali safety tidak terikat lagi! Bahaya sekali! Cepat ikat!';
-        } else if (violationType === 'NO HELMET') {
+        } else if (alertViolationType === 'NO HELMET') {
           textToSpeak = 'Eh! Tidak pakai helmet? Bisa jatuh kepala! Pakai sekarang juga!';
-        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+        } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
         }
-        langToUse = 'id-ID'; // Use Indonesian for better compatibility
-      } else if (language === 'bengali') {
-        // Bengali text selection
-        if (violationType === 'UNHOOKED HARNESS') {
+      } else if (selectedLanguage === 'bengali') {
+        if (alertViolationType === 'UNHOOKED HARNESS') {
           textToSpeak = 'সতর্কতা! নিরাপত্তা বেল্ট বাঁধা হয়নি!';
-        } else if (violationType === 'NO HELMET') {
+        } else if (alertViolationType === 'NO HELMET') {
           textToSpeak = 'সতর্কতা! হেলমেট পরা হয়নি!';
-        } else if (violationType === 'UNAUTHORIZED ACCESS') {
+        } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'সতর্কতা! অননুমোদিত প্রবেশ!';
         }
-        langToUse = 'hi-IN'; // Use Hindi as primary fallback
       }
       
       // Create utterance
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = langToUse;
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
       
-      // Enhanced voice selection for all languages
-      if (language === 'malay' || language === 'rojak') {
-        // Always try to use the best available voice, but prioritize clarity
-        const bestMalayVoice = selectBestMalayVoice(availableVoices);
-        const bestEnglishVoice = availableVoices.find(voice =>
-          voice.lang.includes('en-US') &&
-          (voice.name.toLowerCase().includes('google') ||
-           voice.name.toLowerCase().includes('microsoft'))
-        ) || availableVoices.find(voice => voice.default && voice.lang.includes('en'));
-        
-        // Prefer Malay voice if available, otherwise use best English voice
-        const selectedVoice = bestMalayVoice || bestEnglishVoice;
-        
-        if (selectedVoice) {
-          utterance.voice = selectedVoice;
-          utterance.lang = selectedVoice.lang;
-          console.log('Selected voice for', language, ':', selectedVoice.name, '(', selectedVoice.lang, ')');
-          
-          // Adjust parameters based on voice type
-          if (bestMalayVoice) {
-            utterance.rate = 0.9; // Slower for Malay
-            utterance.pitch = 1.0;
-          } else {
-            utterance.rate = 1.1; // Slightly faster for English with Malaysian words
-            utterance.pitch = 1.1; // Slightly higher for urgency
-          }
-          utterance.volume = 1.0;
-        }
-      } else if (language === 'bengali') {
-        // Bengali voice selection (same logic as WorkerDigitalPassport)
-        const voices = availableVoices;
-        let preferredVoice = null;
-        
-        // Priority 1: Bengali voices
-        preferredVoice = voices.find(voice => voice.lang.includes('bn'));
-        
-        // Priority 2: Hindi voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('hi'));
-        }
-        
-        // Priority 3: Indonesian voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('id'));
-        }
-        
-        // Priority 4: Indian English voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('en-IN') ||
-            voice.name.toLowerCase().includes('india')
-          );
-        }
-        
-        // Priority 5: Default English voice
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice => voice.lang.includes('en') && voice.default);
-        }
-        
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-          utterance.lang = preferredVoice.lang;
-          console.log('Selected voice for Bengali:', preferredVoice.name, '(', preferredVoice.lang, ')');
-        }
+      // SIMPLE LANGUAGE MAPPING
+      if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
+        utterance.lang = 'id-ID'; // Indonesian for Malay
+      } else if (selectedLanguage === 'bengali') {
+        utterance.lang = 'hi-IN'; // Hindi for Bengali
       } else {
-        // English voice selection
-        const voices = availableVoices;
-        let preferredVoice = voices.find(voice =>
-          voice.lang.includes('en-US') &&
-          (voice.name.toLowerCase().includes('google') ||
-           voice.name.toLowerCase().includes('microsoft') ||
-           voice.name.toLowerCase().includes('siri'))
-        );
-        
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-          console.log('Selected voice for English:', preferredVoice.name);
-        }
+        utterance.lang = 'en-US'; // English
       }
       
-      // Simple event handlers
+      // Simple settings
+      utterance.rate = 1.1; // Slightly faster for urgency
+      utterance.pitch = 1.2; // Higher pitch for alerts
+      utterance.volume = 1.0;
+      
+      // SIMPLE VOICE SELECTION
+      const voices = window.speechSynthesis.getVoices();
+      let selectedVoice = null;
+      
+      if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
+        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+      } else if (selectedLanguage === 'bengali') {
+        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
+      } else {
+        selectedVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('en-US') && v.default);
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log('✅ Alert Voice:', selectedVoice.name);
+      } else {
+        console.log('⚠️ Using default voice for alert');
+      }
+      
+      // Event handlers
       utterance.onstart = () => {
-        console.log('Speech started:', textToSpeak);
+        console.log('✅ Alert speech started');
         setIsSpeaking(true);
       };
       
       utterance.onend = () => {
-        console.log('Speech ended');
+        console.log('✅ Alert speech ended');
         setIsSpeaking(false);
       };
       
       utterance.onerror = (e) => {
-        console.error('Speech error:', e);
+        console.error('❌ Alert speech error:', e.error);
         setIsSpeaking(false);
+        setSpeechError('Alert speech failed: ' + e.error);
       };
       
-      // Speak immediately
-      console.log('Speaking now:', textToSpeak);
+      // Speak!
       window.speechSynthesis.speak(utterance);
+      console.log('🚨 Speaking alert...');
       
-      console.log('=== SIMPLE SPEECH END ===');
     } catch (error) {
-      console.error('Speech function error:', error);
+      console.error('❌ Alert speech error:', error);
       setIsSpeaking(false);
+      setSpeechError('Alert speech error: ' + error.message);
     }
   };
 
@@ -519,23 +323,11 @@ export default function ViolationAlert() {
                   </span>
                 </button>
                 <button
-                  onClick={() => {
-                    // Grant permission and speak when user clicks
-                    setSpeechPermissionGranted(true);
-                    setSpeechError(null);
-                    speakAlertMessage(alertMessage);
-                  }}
+                  onClick={() => speakAlertMessage(alertMessage)}
                   className="p-1 hover:bg-red-600 rounded transition-colors"
                   title={speechPermissionGranted ? "Repeat Message" : "Click to Enable Speech"}
                 >
                   <Speaker className={`w-4 h-4 text-white ${isSpeaking ? 'animate-pulse' : ''}`} />
-                </button>
-                <button
-                  onClick={testSpeech}
-                  className="p-1 hover:bg-red-600 rounded transition-colors"
-                  title="Test Speech"
-                >
-                  <Volume2 className="w-4 h-4 text-white" />
                 </button>
                 <div className="text-white text-sm">
                   {new Date().toLocaleTimeString()}
