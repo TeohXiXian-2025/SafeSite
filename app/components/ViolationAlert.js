@@ -96,7 +96,7 @@ export default function ViolationAlertFIXED() {
     }, 3000);
   };
 
-  // SIMPLIFIED SPEECH FUNCTION
+  // SIMPLIFIED SPEECH FUNCTION WITH MALE VOICES AND URGENCY
   const speakAlertMessage = (message) => {
     console.log('🚨 VIOLATION ALERT SPEAK:', message, 'LANG:', selectedLanguage);
     
@@ -119,27 +119,27 @@ export default function ViolationAlertFIXED() {
       
       if (selectedLanguage === 'malay') {
         if (alertViolationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'AMARAN: Tali pinggang keselamatan tidak dipasang';
+          textToSpeak = 'AMARAN! TALI SAFETY TIDAK DIKUKUH! BAHAYA! PASTIKAN TALI SAFETY DIKUKUH SEKARANG!';
         } else if (alertViolationType === 'NO HELMET') {
-          textToSpeak = 'AMARAN: Topi keselamatan tidak dipakai';
+          textToSpeak = 'AMARAN! HELMET TIDAK DIPAKAI! RISIKO KEPALA CEDERA! PAKAI HELMET SEKARANG!';
         } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'AMARAN: Akses tanpa kebenaran';
+          textToSpeak = 'AMARAN! AKSES TANPA IZIN! KAWASAN TERHAD! KELUAR DARI KAWASAN INI SEKARANG!';
         }
       } else if (selectedLanguage === 'rojak') {
         if (alertViolationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'Woi! Tali safety tidak terikat lagi! Bahaya sekali! Cepat ikat!';
+          textToSpeak = 'WOI! TALI SAFETY LEPAS! BAHAYA GILA! IKAT BALIK SEKARANG JANGAN BIARKAN!';
         } else if (alertViolationType === 'NO HELMET') {
-          textToSpeak = 'Eh! Tidak pakai helmet? Bisa jatuh kepala! Pakai sekarang juga!';
+          textToSpeak = 'EH! PAKAI HELMET LA! KEPALA BOLEH PECAH! PAKAI SEKARANG JUGA!';
         } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
+          textToSpeak = 'HEI! SIAPA KAU MASUK SINI? KAWASAN LARANG! KELUAR CEPAT DARI SINI!';
         }
       } else if (selectedLanguage === 'bengali') {
         if (alertViolationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'সতর্কতা! নিরাপত্তা বেল্ট বাঁধা হয়নি!';
+          textToSpeak = 'সতর্কতা! নিরাপত্তা বেল্ট খোলা! বিপদ! এখনই নিরাপত্তা বেল্ট বাঁধুন!';
         } else if (alertViolationType === 'NO HELMET') {
-          textToSpeak = 'সতর্কতা! হেলমেট পরা হয়নি!';
+          textToSpeak = 'সতর্কতা! হেলমেট নেই! মাথার আঘাতের ঝুঁকি! এখনই হেলমেট পরুন!';
         } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'সতর্কতা! অননুমোদিত প্রবেশ!';
+          textToSpeak = 'সতর্কতা! অননুমোদিত প্রবেশ! সীমাবদ্ধ এলাকা! এখনই এখান থেকে বেরিয়ে যান!';
         }
       }
       
@@ -155,34 +155,51 @@ export default function ViolationAlertFIXED() {
         utterance.lang = 'en-US'; // English
       }
       
-      // Simple settings
-      utterance.rate = 1.1; // Slightly faster for urgency
-      utterance.pitch = 1.2; // Higher pitch for alerts
-      utterance.volume = 1.0;
+      // URGENT SETTINGS - More aggressive for alerts
+      utterance.rate = 1.3; // Much faster for urgency
+      utterance.pitch = 0.8; // Lower pitch for male voice sound
+      utterance.volume = 1.0; // Maximum volume
       
-      // SIMPLE VOICE SELECTION
+      // MALE VOICE SELECTION
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
       if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
-        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+        // Try to find male Indonesian voice
+        selectedVoice = voices.find(v =>
+          v.lang.includes('id-ID') &&
+          (v.name.toLowerCase().includes('male') ||
+           v.name.toLowerCase().includes('pria') ||
+           v.name.toLowerCase().includes('lelaki'))
+        ) || voices.find(v => v.lang.includes('id-ID')); // Fallback to any Indonesian
       } else if (selectedLanguage === 'bengali') {
-        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
+        // Try to find male Hindi voice
+        selectedVoice = voices.find(v =>
+          v.lang.includes('hi-IN') &&
+          (v.name.toLowerCase().includes('male') ||
+           v.name.toLowerCase().includes('purush'))
+        ) || voices.find(v => v.lang.includes('hi-IN')); // Fallback to any Hindi
       } else {
-        selectedVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google')) ||
-                       voices.find(v => v.lang.includes('en-US') && v.default);
+        // Try to find male English voice
+        selectedVoice = voices.find(v =>
+          v.lang.includes('en-US') &&
+          (v.name.toLowerCase().includes('male') ||
+           v.name.toLowerCase().includes('david') ||
+           v.name.toLowerCase().includes('mark'))
+        ) || voices.find(v => v.lang.includes('en-US') && v.name.includes('Microsoft')) ||
+          voices.find(v => v.lang.includes('en-US') && v.default);
       }
       
       if (selectedVoice) {
         utterance.voice = selectedVoice;
-        console.log('✅ Alert Voice:', selectedVoice.name);
+        console.log('✅ Alert Voice (Male):', selectedVoice.name);
       } else {
         console.log('⚠️ Using default voice for alert');
       }
       
       // Event handlers
       utterance.onstart = () => {
-        console.log('✅ Alert speech started');
+        console.log('✅ Alert speech started (URGENT)');
         setIsSpeaking(true);
       };
       
@@ -199,7 +216,7 @@ export default function ViolationAlertFIXED() {
       
       // Speak!
       window.speechSynthesis.speak(utterance);
-      console.log('🚨 Speaking alert...');
+      console.log('🚨 Speaking URGENT alert...');
       
     } catch (error) {
       console.error('❌ Alert speech error:', error);

@@ -505,10 +505,10 @@ export default function WorkerDigitalPassportFIXED() {
 
   const handleRedZoneSimulation = () => {
     const warningMessages = {
-      english: 'RED ZONE ALERT! Evacuate Immediately!',
-      malay: 'AMARAN ZON MERAH! Evakuasi Segera!',
-      bengali: 'রেড জোন সতর্কতা! অবিলম্বে সরে যান!',
-      rojak: 'AWAS! ZON MERAH INI! SANGAT BAHAYA! LARI SEKARANG!'
+      english: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!',
+      malay: 'AMARAN ZON MERAH! BAHAYA! EVAKUASI SEGERA! KELUAR DARI KAWASAN INI SEKARANG!',
+      bengali: 'রেড জোন সতর্কতা! বিপদ! অবিলম্বে সরে যান! এখনই এলাকা ছাড়ুন!',
+      rojak: 'AWAS! ZON MERAH! BAHAYA GILA! LARI SEKARANG! KELUAR CEPAT DARI SINI!'
     };
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
@@ -516,8 +516,8 @@ export default function WorkerDigitalPassportFIXED() {
     // Show alert
     alert(message);
     
-    // Speak the alert
-    speakText(message, selectedLanguage);
+    // Speak the alert with urgency
+    speakText(message, selectedLanguage, true); // true = urgent mode
   };
 
   const handleLanguageChange = (language) => {
