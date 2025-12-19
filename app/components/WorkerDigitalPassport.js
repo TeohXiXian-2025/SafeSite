@@ -382,8 +382,8 @@ export default function WorkerDigitalPassportFIXED() {
   ];
 
   // SIMPLIFIED SPEECH FUNCTION
-  const speakText = (text, language) => {
-    console.log('🎤 SPEAK:', text, 'LANG:', language);
+  const speakText = (text, language, isUrgent = false) => {
+    console.log('🎤 SPEAK:', text, 'LANG:', language, 'URGENT:', isUrgent);
     
     if (!('speechSynthesis' in window)) {
       console.error('❌ Speech not supported');
@@ -402,19 +402,25 @@ export default function WorkerDigitalPassportFIXED() {
       // Create utterance
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // SIMPLE LANGUAGE MAPPING
+      // LANGUAGE MAPPING - Use English for Bengali to fix sound issue
       if (language === 'malay' || language === 'rojak') {
         utterance.lang = 'id-ID'; // Indonesian for Malay
       } else if (language === 'bengali') {
-        utterance.lang = 'hi-IN'; // Hindi for Bengali
+        utterance.lang = 'en-US'; // Use English for Bengali to fix sound
       } else {
         utterance.lang = 'en-US'; // English
       }
       
-      // Simple settings
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
+      // URGENCY SETTINGS
+      if (isUrgent) {
+        utterance.rate = 1.8; // Very fast for urgent
+        utterance.pitch = 0.5; // Deep male voice
+        utterance.volume = 1.0;
+      } else {
+        utterance.rate = 1.2; // Normal speed
+        utterance.pitch = 0.7; // Male voice
+        utterance.volume = 1.0;
+      }
       
       // FORCE MALE VOICE SELECTION - Aggressive for worker page
       const voices = window.speechSynthesis.getVoices();
@@ -511,11 +517,32 @@ export default function WorkerDigitalPassportFIXED() {
     const warningMessages = {
       english: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!',
       malay: 'AMARAN ZON MERAH! BAHAYA! EVAKUASI SEGERA! KELUAR DARI KAWASAN INI SEKARANG!',
-      bengali: 'রেড জোন সতর্কতা! বিপদ! অবিলম্বে সরে যান! এখনই এলাকা ছাড়ুন!',
+      bengali: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!', // Use English for Bengali
       rojak: 'AWAS! ZON MERAH! BAHAYA GILA! LARI SEKARANG! KELUAR CEPAT DARI SINI!'
     };
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
+    
+    // Play alert sound FIRST
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 1000; // Higher pitch for urgency
+      oscillator.type = 'square'; // Harsher sound
+      
+      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Alert sound not supported:', error);
+    }
     
     // Show alert IMMEDIATELY
     alert(message);

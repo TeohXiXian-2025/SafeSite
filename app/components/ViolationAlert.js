@@ -121,7 +121,7 @@ export default function ViolationAlertFIXED() {
         if (alertViolationType === 'UNHOOKED HARNESS') {
           textToSpeak = 'AMARAN! TALI SAFETY TIDAK DIKUKUH! BAHAYA! PASTIKAN TALI SAFETY DIKUKUH SEKARANG!';
         } else if (alertViolationType === 'NO HELMET') {
-          textToSpeak = 'AMARAN! HELMET TIDAK DIPAKAI! RISIKO KEPALA CEDERA! PAKAI HELMET SEKARANG!';
+          textToSpeak = 'AMARAN! TOPI KESELAMATAN TIDAK DIPAKAI! RISIKO KEPALA CEDERA! PAKAI TOPI KESELAMATAN SEKARANG!';
         } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'AMARAN! AKSES TANPA IZIN! KAWASAN TERHAD! KELUAR DARI KAWASAN INI SEKARANG!';
         }
