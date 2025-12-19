@@ -10,8 +10,10 @@ export default function ViolationAlert() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [availableVoices, setAvailableVoices] = useState([]);
   const [isCalling, setIsCalling] = useState(false);
+  const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
+  const [speechError, setSpeechError] = useState(null);
 
-  // Load voices when component mounts
+  // Load voices when component mounts and check speech support
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
@@ -21,6 +23,7 @@ export default function ViolationAlert() {
       console.log('=== VOICE DEBUGGING INFO ===');
       console.log('Browser:', navigator.userAgent);
       console.log('Platform:', navigator.platform);
+      console.log('Protocol:', window.location.protocol);
       console.log('Total voices available:', voices.length);
       console.log('All voices:');
       voices.forEach((voice, index) => {
@@ -35,6 +38,22 @@ export default function ViolationAlert() {
       console.log('English voices:', englishVoices.map(v => v.name));
       console.log('=== END VOICE DEBUGGING ===');
     };
+
+    // Check if speech synthesis is supported
+    if (!('speechSynthesis' in window)) {
+      console.error('Speech synthesis not supported in this browser');
+      setSpeechError('Speech synthesis not supported in this browser');
+      return;
+    }
+
+    // Check if we're on HTTPS (GitHub Pages)
+    if (window.location.protocol === 'https:') {
+      console.log('Running on HTTPS - speech synthesis requires user interaction');
+      setSpeechError('Click the speaker button to enable speech alerts');
+    } else {
+      console.log('Running on HTTP - speech synthesis should work automatically');
+      setSpeechPermissionGranted(true);
+    }
 
     loadVoices();
     
@@ -108,7 +127,7 @@ export default function ViolationAlert() {
     }, 3000);
   };
 
-  // Simple test function for debugging speech
+  // Simple test function for debugging speech - now requires user interaction
   const testSpeech = () => {
     try {
       console.log('=== BASIC SPEECH TEST ===');
@@ -122,6 +141,10 @@ export default function ViolationAlert() {
       console.log('Speech synthesis supported');
       console.log('Voices available:', window.speechSynthesis.getVoices().length);
       
+      // Grant permission on user interaction
+      setSpeechPermissionGranted(true);
+      setSpeechError(null);
+      
       // Cancel any existing speech
       window.speechSynthesis.cancel();
       
@@ -134,17 +157,18 @@ export default function ViolationAlert() {
       
       testUtterance.onstart = () => {
         console.log('✅ Test speech STARTED successfully');
-        alert('Speech test started - you should hear "Test speech. Hello world."');
+        setIsSpeaking(true);
       };
       
       testUtterance.onend = () => {
         console.log('✅ Test speech ENDED successfully');
-        alert('Speech test completed successfully');
+        setIsSpeaking(false);
       };
       
       testUtterance.onerror = (e) => {
         console.error('❌ Test speech FAILED:', e);
-        alert('Speech test failed: ' + e.error);
+        setIsSpeaking(false);
+        setSpeechError('Speech test failed: ' + e.error);
       };
       
       // Speak
@@ -153,7 +177,8 @@ export default function ViolationAlert() {
       
     } catch (error) {
       console.error('❌ Speech test error:', error);
-      alert('Speech test error: ' + error.message);
+      setIsSpeaking(false);
+      setSpeechError('Speech test error: ' + error.message);
     }
     
     console.log('=== END BASIC SPEECH TEST ===');
@@ -162,16 +187,26 @@ export default function ViolationAlert() {
   const speakAlertMessage = (message) => {
     console.log('ViolationAlert - speakAlertMessage called with:', message);
     console.log('ViolationAlert - selectedLanguage:', selectedLanguage);
+    console.log('ViolationAlert - speechPermissionGranted:', speechPermissionGranted);
     
-    if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech immediately
-      window.speechSynthesis.cancel();
-      
-      // Speak immediately without complex timing
-      speakAlertMessageInternal(message, selectedLanguage, alertViolationType);
-    } else {
+    if (!('speechSynthesis' in window)) {
       console.log('Speech synthesis not supported');
+      setSpeechError('Speech synthesis not supported in this browser');
+      return;
     }
+
+    // Check if we have permission (user interaction) for HTTPS
+    if (window.location.protocol === 'https:' && !speechPermissionGranted) {
+      console.log('Speech synthesis requires user interaction on HTTPS');
+      setSpeechError('Click the speaker button to enable speech alerts');
+      return;
+    }
+    
+    // Cancel any ongoing speech immediately
+    window.speechSynthesis.cancel();
+    
+    // Speak immediately without complex timing
+    speakAlertMessageInternal(message, selectedLanguage, alertViolationType);
   };
 
   const speakAlertMessageInternal = (message, language, violationType) => {
@@ -253,8 +288,10 @@ export default function ViolationAlert() {
       // Play alert sound
       playAlertSound();
       
-      // Speak the alert message
-      speakAlertMessage(alertMessage);
+      // Only speak automatically if we have permission (HTTP or user granted)
+      if (speechPermissionGranted) {
+        speakAlertMessage(alertMessage);
+      }
       
       // Auto-hide after 6 seconds for all languages
       const timer = setTimeout(() => {
@@ -269,7 +306,7 @@ export default function ViolationAlert() {
         }
       };
     }
-  }, [showAlert, setShowAlert, alertMessage, selectedLanguage]);
+  }, [showAlert, setShowAlert, alertMessage, selectedLanguage, speechPermissionGranted]);
 
   return (
     <AnimatePresence>
@@ -323,6 +360,11 @@ export default function ViolationAlert() {
                   <p className="text-white text-lg font-semibold leading-relaxed">
                     {alertMessage}
                   </p>
+                  {speechError && (
+                    <p className="text-yellow-300 text-sm mt-2">
+                      {speechError}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -356,9 +398,14 @@ export default function ViolationAlert() {
                   </span>
                 </button>
                 <button
-                  onClick={() => speakAlertMessage(alertMessage)}
+                  onClick={() => {
+                    // Grant permission and speak when user clicks
+                    setSpeechPermissionGranted(true);
+                    setSpeechError(null);
+                    speakAlertMessage(alertMessage);
+                  }}
                   className="p-1 hover:bg-red-600 rounded transition-colors"
-                  title="Repeat Message"
+                  title={speechPermissionGranted ? "Repeat Message" : "Click to Enable Speech"}
                 >
                   <Speaker className={`w-4 h-4 text-white ${isSpeaking ? 'animate-pulse' : ''}`} />
                 </button>

@@ -44,6 +44,8 @@ export default function WorkerDigitalPassport() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [availableVoices, setAvailableVoices] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
+  const [speechError, setSpeechError] = useState(null);
   const [showPermitModal, setShowPermitModal] = useState(false);
   const [permitForm, setPermitForm] = useState({
     type: 'Hot Work',
@@ -66,12 +68,28 @@ export default function WorkerDigitalPassport() {
     siteAssigned: 'Kuala Lumpur Tower Project'
   };
 
-  // Load voices when component mounts
+  // Load voices when component mounts and check speech support
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
     };
+
+    // Check if speech synthesis is supported
+    if (!('speechSynthesis' in window)) {
+      console.error('Speech synthesis not supported in this browser');
+      setSpeechError('Speech synthesis not supported in this browser');
+      return;
+    }
+
+    // Check if we're on HTTPS (GitHub Pages)
+    if (window.location.protocol === 'https:') {
+      console.log('Running on HTTPS - speech synthesis requires user interaction');
+      setSpeechError('Click the red zone button to enable speech alerts');
+    } else {
+      console.log('Running on HTTP - speech synthesis should work automatically');
+      setSpeechPermissionGranted(true);
+    }
 
     loadVoices();
     
@@ -419,7 +437,20 @@ export default function WorkerDigitalPassport() {
   ];
 
   const speakSOPContent = (text, lang = 'en') => {
-    if ('speechSynthesis' in window) {
+    if (!('speechSynthesis' in window)) {
+      console.error('Speech synthesis not supported');
+      setSpeechError('Speech synthesis not supported in this browser');
+      return;
+    }
+
+    // Check if we have permission (user interaction) for HTTPS
+    if (window.location.protocol === 'https:' && !speechPermissionGranted) {
+      console.log('Speech synthesis requires user interaction on HTTPS');
+      setSpeechError('Click any speech button to enable speech');
+      return;
+    }
+
+    try {
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
@@ -473,11 +504,21 @@ export default function WorkerDigitalPassport() {
         utterance.voice = preferredVoice;
       }
       
-      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setSpeechError(null);
+      };
       utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onerror = (e) => {
+        setIsSpeaking(false);
+        setSpeechError('Speech error: ' + e.error);
+      };
       
       window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Speech function error:', error);
+      setIsSpeaking(false);
+      setSpeechError('Speech error: ' + error.message);
     }
   };
 
@@ -522,6 +563,10 @@ export default function WorkerDigitalPassport() {
   };
 
   const handleRedZoneSimulation = () => {
+    // Grant permission on user interaction
+    setSpeechPermissionGranted(true);
+    setSpeechError(null);
+    
     // Show visual alert first
     const warningMessages = {
       english: 'RED ZONE ALERT! Evacuate Immediately!',
@@ -533,7 +578,7 @@ export default function WorkerDigitalPassport() {
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Start speaking immediately (before alert)
+    // Start speaking after user interaction
     try {
       if ('speechSynthesis' in window) {
         // Cancel any previous speech
@@ -554,12 +599,26 @@ export default function WorkerDigitalPassport() {
         utterance.pitch = 1.3; // Higher pitch for emergency
         utterance.volume = 1.0; // Maximum volume for urgency
         
-        // Simple speak call without complex event handlers
+        utterance.onstart = () => {
+          console.log('Red zone alert speech started');
+          setIsSpeaking(true);
+        };
+        utterance.onend = () => {
+          console.log('Red zone alert speech ended');
+          setIsSpeaking(false);
+        };
+        utterance.onerror = (e) => {
+          console.error('Red zone alert speech error:', e);
+          setIsSpeaking(false);
+          setSpeechError('Speech error: ' + e.error);
+        };
+        
+        // Speak after user interaction
         window.speechSynthesis.speak(utterance);
       }
     } catch (error) {
-      // Silently fail if speech doesn't work
-      console.log('Speech not available:', error);
+      console.error('Speech not available:', error);
+      setSpeechError('Speech not available: ' + error.message);
     }
     
     // Show browser alert immediately after starting speech
@@ -769,8 +828,13 @@ export default function WorkerDigitalPassport() {
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-white font-semibold text-sm">{selectedSOP.title}</h4>
                     <button
-                      onClick={isPlaying ? handlePauseAudio : () => handlePlayAudio(selectedSOP)}
+                      onClick={isPlaying ? handlePauseAudio : () => {
+                        setSpeechPermissionGranted(true);
+                        setSpeechError(null);
+                        handlePlayAudio(selectedSOP);
+                      }}
                       className="p-2 bg-construction-yellow rounded-full text-black"
+                      title={speechPermissionGranted ? (isPlaying ? "Pause" : "Play") : "Click to enable speech"}
                     >
                       {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                     </button>
@@ -793,9 +857,18 @@ export default function WorkerDigitalPassport() {
                         {isPlaying ? (isSpeaking ? t.speaking : t.playing) : t.paused} • {Math.floor((audioProgress / 100) * selectedSOP.audioDuration)}s / {selectedSOP.audioDuration}s
                       </span>
                     </div>
+                    {speechError && (
+                      <div className="text-xs text-yellow-300 mt-1">
+                        {speechError}
+                      </div>
+                    )}
                     <div className="flex space-x-1">
                       <button
-                        onClick={() => speakSOPContent(selectedSOP.content.english, 'en')}
+                        onClick={() => {
+                          setSpeechPermissionGranted(true);
+                          setSpeechError(null);
+                          speakSOPContent(selectedSOP.content.english, 'en');
+                        }}
                         className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                         title="Play in English"
                       >
@@ -803,7 +876,11 @@ export default function WorkerDigitalPassport() {
                       </button>
                       {selectedSOP.content.bengali && (
                         <button
-                          onClick={() => speakSOPContent(selectedSOP.content.bengali, 'bn')}
+                          onClick={() => {
+                            setSpeechPermissionGranted(true);
+                            setSpeechError(null);
+                            speakSOPContent(selectedSOP.content.bengali, 'bn');
+                          }}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                           title="Play in Bengali"
                         >
@@ -812,7 +889,11 @@ export default function WorkerDigitalPassport() {
                       )}
                       {selectedSOP.content.malay && (
                         <button
-                          onClick={() => speakSOPContent(selectedSOP.content.malay, 'ms')}
+                          onClick={() => {
+                            setSpeechPermissionGranted(true);
+                            setSpeechError(null);
+                            speakSOPContent(selectedSOP.content.malay, 'ms');
+                          }}
                           className="p-1 bg-dark-surface rounded hover:bg-dark-border transition-colors"
                           title="Play in Malay"
                         >
@@ -884,10 +965,14 @@ export default function WorkerDigitalPassport() {
                 
                 <button
                   onClick={handleRedZoneSimulation}
-                  className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-all"
+                  className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-all relative"
+                  title={speechPermissionGranted ? t.redZoneAlert : "Click to enable speech alerts"}
                 >
                   <AlertTriangle className="w-4 h-4 text-orange-400 mx-auto mb-1" />
                   <span className="text-xs text-orange-400 block">{t.redZoneAlert}</span>
+                  {isSpeaking && (
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                  )}
                 </button>
               </div>
             </motion.div>
