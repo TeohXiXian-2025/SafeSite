@@ -381,9 +381,9 @@ export default function WorkerDigitalPassportFIXED() {
     }
   ];
 
-  // SIMPLIFIED SPEECH FUNCTION
+  // SIMPLIFIED SPEECH FUNCTION - FIXED LIKE SUPERVISOR
   const speakText = (text, language, isUrgent = false) => {
-    console.log('🎤 SPEAK:', text, 'LANG:', language, 'URGENT:', isUrgent);
+    console.log('🎤 WORKER SPEAK:', text, 'LANG:', language, 'URGENT:', isUrgent);
     
     if (!('speechSynthesis' in window)) {
       console.error('❌ Speech not supported');
@@ -402,74 +402,103 @@ export default function WorkerDigitalPassportFIXED() {
       // Create utterance
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // LANGUAGE MAPPING - Use Indonesian for Malay/Rojak to fix pronunciation
+      // LANGUAGE MAPPING - Same as supervisor for consistency
       if (language === 'malay' || language === 'rojak') {
-        utterance.lang = 'id-ID'; // Indonesian for Malay/Rojak
+        utterance.lang = 'id-ID'; // Indonesian for Malay
       } else if (language === 'bengali') {
-        utterance.lang = 'en-US'; // Use English for Bengali to fix sound
+        utterance.lang = 'hi-IN'; // Hindi for Bengali
       } else {
         utterance.lang = 'en-US'; // English
       }
       
-      // URGENCY SETTINGS
+      // URGENCY SETTINGS - Same as supervisor
+      if (language === 'malay' || language === 'rojak') {
+        utterance.rate = 1.2; // Slightly slower for Malay/Rojak clarity
+        utterance.pitch = 0.7; // Male voice but not too low
+      } else if (language === 'bengali') {
+        utterance.rate = 1.4; // Fast for Bengali
+        utterance.pitch = 0.6; // Lower pitch for male voice
+      } else {
+        utterance.rate = 1.6; // Fastest for English
+        utterance.pitch = 0.6; // Lower pitch for male voice
+      }
+      
+      // Override for urgent mode
       if (isUrgent) {
         utterance.rate = 1.8; // Very fast for urgent
         utterance.pitch = 0.5; // Deep male voice
-        utterance.volume = 1.0;
-      } else {
-        utterance.rate = 1.2; // Normal speed
-        utterance.pitch = 0.7; // Male voice
-        utterance.volume = 1.0;
       }
       
-      // FORCE MALE VOICE SELECTION - Aggressive for worker page
+      utterance.volume = 1.0; // Maximum volume
+      
+      // SMART VOICE SELECTION - Same logic as supervisor
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
-      console.log('=== WORKER PASSPORT VOICES ===');
+      console.log('=== WORKER VOICES FOR SELECTION ===');
       voices.forEach((v, i) => {
         console.log(`${i+1}. ${v.name} (${v.lang})`);
       });
       
-      // FORCE MICROSOFT DAVID FOR ALL LANGUAGES - Most reliable male voice
-      selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                     voices.find(v => v.name.includes('Microsoft Mark')) ||
-                     voices.find(v => v.name.toLowerCase().includes('male')) ||
-                     voices.find(v => v.name.includes('Google'));
-      
-      console.log('Worker FORCE selected voice:', selectedVoice?.name);
+      if (language === 'malay' || language === 'rojak') {
+        // Priority 1: Indonesian voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+        // Priority 2: Any male voice if Indonesian not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
+        console.log('Malay/Rojak selected voice:', selectedVoice?.name);
+      } else if (language === 'bengali') {
+        // Priority 1: Hindi voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
+        // Priority 2: Any male voice if Hindi not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
+        console.log('Bengali selected voice:', selectedVoice?.name);
+      } else {
+        // English - use male voice
+        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                       voices.find(v => v.name.includes('Microsoft Mark')) ||
+                       voices.find(v => v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('en-US') && v.default);
+        console.log('English selected voice:', selectedVoice?.name);
+      }
       
       if (selectedVoice) {
         utterance.voice = selectedVoice;
-        console.log('✅ Voice:', selectedVoice.name);
+        console.log('✅ Worker Voice (Male):', selectedVoice.name);
       } else {
-        console.log('⚠️ Using default voice');
+        console.log('⚠️ Using default voice for worker');
       }
       
       // Event handlers
       utterance.onstart = () => {
-        console.log('✅ Speech started');
+        console.log('✅ Worker speech started');
         setIsSpeaking(true);
       };
       
       utterance.onend = () => {
-        console.log('✅ Speech ended');
+        console.log('✅ Worker speech ended');
         setIsSpeaking(false);
       };
       
       utterance.onerror = (e) => {
-        console.error('❌ Speech error:', e.error);
+        console.error('❌ Worker speech error:', e.error);
         setIsSpeaking(false);
-        setSpeechError('Speech failed: ' + e.error);
+        setSpeechError('Worker speech failed: ' + e.error);
       };
       
       // Speak!
       window.speechSynthesis.speak(utterance);
+      console.log('🎤 Worker speaking...');
       
     } catch (error) {
-      console.error('❌ Speech error:', error);
+      console.error('❌ Worker speech error:', error);
       setIsSpeaking(false);
-      setSpeechError('Speech error: ' + error.message);
+      setSpeechError('Worker speech error: ' + error.message);
     }
   };
 
@@ -517,13 +546,13 @@ export default function WorkerDigitalPassportFIXED() {
     const warningMessages = {
       english: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!',
       malay: 'AMARAN ZON MERAH! BAHAYA! EVAKUASI SEGERA! KELUAR DARI KAWASAN INI SEKARANG!',
-      bengali: 'RED ZONE ALERT! DANGER! EVACUATE IMMEDIATELY! LEAVE THE AREA NOW!', // Use English for Bengali
+      bengali: 'সতর্কতা! রেড জোন! বিপদ! অবিলম্বে সরে যান! এখনই এলাকা ছাড়ুন!', // Proper Bengali
       rojak: 'AWAS! ZON MERAH! BAHAYA GILA! LARI SEKARANG! KELUAR CEPAT DARI SINI!'
     };
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Play alert sound FIRST
+    // Play alert sound FIRST - same as supervisor
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
@@ -532,14 +561,32 @@ export default function WorkerDigitalPassportFIXED() {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 1000; // Higher pitch for urgency
-      oscillator.type = 'square'; // Harsher sound
+      oscillator.frequency.value = 800; // Same as supervisor
+      oscillator.type = 'sine'; // Same as supervisor
       
-      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
       
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
+      oscillator.stop(audioContext.currentTime + 0.5);
+
+      // Play a second beep after 200ms - same as supervisor
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+
+        osc2.frequency.value = 800;
+        osc2.type = 'sine';
+
+        gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        osc2.start(audioContext.currentTime);
+        osc2.stop(audioContext.currentTime + 0.5);
+      }, 200);
     } catch (error) {
       console.log('Alert sound not supported:', error);
     }
