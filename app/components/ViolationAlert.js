@@ -13,6 +13,31 @@ export default function ViolationAlert() {
   const [speechPermissionGranted, setSpeechPermissionGranted] = useState(false);
   const [speechError, setSpeechError] = useState(null);
 
+  // Helper function to select best Malay voice
+  const selectBestMalayVoice = (voices) => {
+    // Priority 1: Malaysian voices
+    let voice = voices.find(v => v.lang.includes('ms-MY') || v.lang.includes('ms-ID'));
+    if (voice) return voice;
+    
+    // Priority 2: Indonesian voices
+    voice = voices.find(v => v.lang.includes('id-ID'));
+    if (voice) return voice;
+    
+    // Priority 3: Any Malay/Indonesian voice
+    voice = voices.find(v => v.lang.includes('ms') || v.lang.includes('id'));
+    if (voice) return voice;
+    
+    // Priority 4: Google voices with Malay in name
+    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('google'));
+    if (voice) return voice;
+    
+    // Priority 5: Microsoft voices with Malay in name
+    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('microsoft'));
+    if (voice) return voice;
+    
+    return null;
+  };
+
   // Load voices when component mounts and check speech support
   useEffect(() => {
     const loadVoices = () => {
@@ -27,15 +52,20 @@ export default function ViolationAlert() {
       console.log('Total voices available:', voices.length);
       console.log('All voices:');
       voices.forEach((voice, index) => {
-        console.log(`${index + 1}. ${voice.name} (${voice.lang}) - Default: ${voice.default}`);
+        console.log(`${index + 1}. ${voice.name} (${voice.lang}) - Default: ${voice.default} - Local: ${voice.localService}`);
       });
       
       // Log preferred voices for each language
       const malayVoices = voices.filter(v => v.lang.includes('ms') || v.lang.includes('id'));
       const englishVoices = voices.filter(v => v.lang.includes('en'));
       
-      console.log('Malay/Indonesian voices:', malayVoices.map(v => v.name));
-      console.log('English voices:', englishVoices.map(v => v.name));
+      console.log('Malay/Indonesian voices:', malayVoices.map(v => `${v.name} (${v.lang})`));
+      console.log('English voices:', englishVoices.map(v => `${v.name} (${v.lang})`));
+      
+      // Test voice selection logic
+      console.log('=== TESTING VOICE SELECTION ===');
+      const testMalayVoice = selectBestMalayVoice(voices);
+      console.log('Best Malay voice selected:', testMalayVoice ? `${testMalayVoice.name} (${testMalayVoice.lang})` : 'None found');
       console.log('=== END VOICE DEBUGGING ===');
     };
 
@@ -258,64 +288,56 @@ export default function ViolationAlert() {
       
       // Enhanced voice selection for consistent Bahasa Rojak
       if (language === 'malay' || language === 'rojak') {
-        const voices = availableVoices;
-        let preferredVoice = null;
+        const bestMalayVoice = selectBestMalayVoice(availableVoices);
         
-        // Priority 1: Malaysian voices
-        preferredVoice = voices.find(voice =>
-          voice.lang.includes('ms-MY') ||
-          voice.lang.includes('ms-ID')
-        );
-        
-        // Priority 2: Indonesian voices (very similar to Malaysian)
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('id-ID') ||
-            voice.name.toLowerCase().includes('indonesian')
-          );
-        }
-        
-        // Priority 3: Google Malay voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.name.toLowerCase().includes('malay') &&
-            voice.name.toLowerCase().includes('google')
-          );
-        }
-        
-        // Priority 4: Microsoft Malay voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.name.toLowerCase().includes('malay') &&
-            voice.name.toLowerCase().includes('microsoft')
-          );
-        }
-        
-        // Priority 5: Any voice that supports Malay
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('ms')
-          );
-        }
-        
-        // Priority 6: Fallback to default English voice (better than nothing)
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.default && voice.lang.includes('en')
-          );
-        }
-        
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-          console.log('Selected voice for Malay/Rojak:', preferredVoice.name, '(', preferredVoice.lang, ')');
+        if (bestMalayVoice) {
+          utterance.voice = bestMalayVoice;
+          utterance.lang = bestMalayVoice.lang;
+          console.log('Selected Malay voice:', bestMalayVoice.name, '(', bestMalayVoice.lang, ')');
+          
+          // Adjust speech parameters for more natural Malaysian accent
+          utterance.rate = 0.95; // Slightly slower for clarity
+          utterance.pitch = 1.0; // Normal pitch
+          utterance.volume = 1.0; // Full volume for alerts
         } else {
-          console.log('No suitable Malay voice found, using default');
+          // Fallback: Use English voice but with Malaysian-style text
+          console.log('No Malay voice found, using English fallback with Malaysian-style pronunciation');
+          
+          const englishVoice = availableVoices.find(voice =>
+            voice.lang.includes('en-US') &&
+            (voice.name.toLowerCase().includes('google') ||
+             voice.name.toLowerCase().includes('microsoft'))
+          ) || availableVoices.find(voice => voice.default && voice.lang.includes('en'));
+          
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+            utterance.lang = 'en-US';
+            console.log('Using English fallback voice:', englishVoice.name);
+          }
+          
+          // Modify text to be more pronounceable by English TTS while keeping Malaysian flavor
+          if (language === 'rojak') {
+            if (violationType === 'UNHOOKED HARNESS') {
+              textToSpeak = 'Warning! Safety harness not connected! Danger!';
+            } else if (violationType === 'NO HELMET') {
+              textToSpeak = 'Hey! No helmet worn! Put it on now!';
+            } else if (violationType === 'UNAUTHORIZED ACCESS') {
+              textToSpeak = 'Hey! What are you doing here? Get out now!';
+            }
+          } else {
+            if (violationType === 'UNHOOKED HARNESS') {
+              textToSpeak = 'Warning! Safety belt not attached!';
+            } else if (violationType === 'NO HELMET') {
+              textToSpeak = 'Warning! Safety helmet not worn!';
+            } else if (violationType === 'UNAUTHORIZED ACCESS') {
+              textToSpeak = 'Warning! Unauthorized access!';
+            }
+          }
+          
+          utterance.rate = 1.0; // Normal rate for English
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
         }
-        
-        // Adjust speech parameters for more natural Malaysian accent
-        utterance.rate = 0.95; // Slightly slower for clarity
-        utterance.pitch = 1.0; // Normal pitch
-        utterance.volume = 1.0; // Full volume for alerts
       } else {
         // English voice selection
         const voices = availableVoices;

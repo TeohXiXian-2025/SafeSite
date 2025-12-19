@@ -68,11 +68,45 @@ export default function WorkerDigitalPassport() {
     siteAssigned: 'Kuala Lumpur Tower Project'
   };
 
+  // Helper function to select best Malay voice
+  const selectBestMalayVoice = (voices) => {
+    // Priority 1: Malaysian voices
+    let voice = voices.find(v => v.lang.includes('ms-MY') || v.lang.includes('ms-ID'));
+    if (voice) return voice;
+    
+    // Priority 2: Indonesian voices
+    voice = voices.find(v => v.lang.includes('id-ID'));
+    if (voice) return voice;
+    
+    // Priority 3: Any Malay/Indonesian voice
+    voice = voices.find(v => v.lang.includes('ms') || v.lang.includes('id'));
+    if (voice) return voice;
+    
+    // Priority 4: Google voices with Malay in name
+    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('google'));
+    if (voice) return voice;
+    
+    // Priority 5: Microsoft voices with Malay in name
+    voice = voices.find(v => v.name.toLowerCase().includes('malay') && v.name.toLowerCase().includes('microsoft'));
+    if (voice) return voice;
+    
+    return null;
+  };
+
   // Load voices when component mounts and check speech support
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
+      
+      // Debug voice availability
+      console.log('=== WORKER PASSPORT VOICE DEBUG ===');
+      const malayVoices = voices.filter(v => v.lang.includes('ms') || v.lang.includes('id'));
+      console.log('Malay/Indonesian voices available:', malayVoices.length);
+      malayVoices.forEach(v => console.log(`- ${v.name} (${v.lang})`));
+      const bestVoice = selectBestMalayVoice(voices);
+      console.log('Best Malay voice selected:', bestVoice ? `${bestVoice.name} (${bestVoice.lang})` : 'None');
+      console.log('=== END WORKER PASSPORT VOICE DEBUG ===');
     };
 
     // Check if speech synthesis is supported
@@ -481,55 +515,35 @@ export default function WorkerDigitalPassport() {
           voice.name.includes('Hindi')
         ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       } else if (lang === 'ms') {
-        // Enhanced Malay voice selection (same logic as ViolationAlert)
-        // Priority 1: Malaysian voices
-        preferredVoice = voices.find(voice =>
-          voice.lang.includes('ms-MY') ||
-          voice.lang.includes('ms-ID')
-        );
+        // Use the same voice selection logic as ViolationAlert
+        const bestMalayVoice = selectBestMalayVoice(voices);
         
-        // Priority 2: Indonesian voices (very similar to Malaysian)
-        if (!preferredVoice) {
+        if (bestMalayVoice) {
+          preferredVoice = bestMalayVoice;
+          utterance.lang = bestMalayVoice.lang;
+          console.log('Selected Malay voice for SOP:', bestMalayVoice.name, '(', bestMalayVoice.lang, ')');
+          
+          // Adjust speech parameters for more natural Malaysian accent
+          utterance.rate = 0.95; // Slightly slower for clarity
+          utterance.pitch = 1.0; // Normal pitch
+          utterance.volume = 1.0; // Full volume
+        } else {
+          // Fallback to English voice
+          console.log('No Malay voice found for SOP, using English fallback');
           preferredVoice = voices.find(voice =>
-            voice.lang.includes('id-ID') ||
-            voice.name.toLowerCase().includes('indonesian')
-          );
+            voice.lang.includes('en-US') &&
+            (voice.name.toLowerCase().includes('google') ||
+             voice.name.toLowerCase().includes('microsoft'))
+          ) || voices.find(voice => voice.default && voice.lang.includes('en'));
+          
+          if (preferredVoice) {
+            utterance.lang = 'en-US';
+          }
+          
+          utterance.rate = 1.0;
+          utterance.pitch = 1.0;
+          utterance.volume = 1.0;
         }
-        
-        // Priority 3: Google Malay voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.name.toLowerCase().includes('malay') &&
-            voice.name.toLowerCase().includes('google')
-          );
-        }
-        
-        // Priority 4: Microsoft Malay voices
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.name.toLowerCase().includes('malay') &&
-            voice.name.toLowerCase().includes('microsoft')
-          );
-        }
-        
-        // Priority 5: Any voice that supports Malay
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.lang.includes('ms')
-          );
-        }
-        
-        // Priority 6: Fallback to default English voice
-        if (!preferredVoice) {
-          preferredVoice = voices.find(voice =>
-            voice.default && voice.lang.includes('en')
-          );
-        }
-        
-        // Adjust speech parameters for more natural Malaysian accent
-        utterance.rate = 0.95; // Slightly slower for clarity
-        utterance.pitch = 1.0; // Normal pitch
-        utterance.volume = 1.0; // Full volume
         
       } else {
         // English voice selection
