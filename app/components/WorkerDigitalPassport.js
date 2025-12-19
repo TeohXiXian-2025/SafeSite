@@ -416,18 +416,18 @@ export default function WorkerDigitalPassportFIXED() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // SIMPLE VOICE SELECTION
+      // FORCE MALE VOICE SELECTION
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
-      if (language === 'malay' || language === 'rojak') {
-        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
-      } else if (language === 'bengali') {
-        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
-      } else {
-        selectedVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google')) ||
-                       voices.find(v => v.lang.includes('en-US') && v.default);
-      }
+      console.log('=== WORKER PASSPORT VOICES ===');
+      
+      // Force Microsoft David for all languages - most reliable male voice
+      selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                     voices.find(v => v.name.includes('Microsoft Mark')) ||
+                     voices.find(v => v.name.includes('Google'));
+      
+      console.log('Worker selected voice:', selectedVoice?.name);
       
       if (selectedVoice) {
         utterance.voice = selectedVoice;

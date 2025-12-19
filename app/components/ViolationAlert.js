@@ -155,39 +155,39 @@ export default function ViolationAlertFIXED() {
         utterance.lang = 'en-US'; // English
       }
       
-      // URGENT SETTINGS - More aggressive for alerts
-      utterance.rate = 1.3; // Much faster for urgency
-      utterance.pitch = 0.8; // Lower pitch for male voice sound
+      // URGENT SETTINGS - Even more aggressive for alerts
+      utterance.rate = 1.6; // Much faster for urgency
+      utterance.pitch = 0.6; // Much lower pitch for male voice sound
       utterance.volume = 1.0; // Maximum volume
       
-      // MALE VOICE SELECTION
+      // FORCE MALE VOICE SELECTION
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
+      console.log('=== AVAILABLE VOICES FOR MALE SELECTION ===');
+      voices.forEach((v, i) => {
+        console.log(`${i+1}. ${v.name} (${v.lang})`);
+      });
+      
       if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
-        // Try to find male Indonesian voice
-        selectedVoice = voices.find(v =>
-          v.lang.includes('id-ID') &&
-          (v.name.toLowerCase().includes('male') ||
-           v.name.toLowerCase().includes('pria') ||
-           v.name.toLowerCase().includes('lelaki'))
-        ) || voices.find(v => v.lang.includes('id-ID')); // Fallback to any Indonesian
+        // Force Microsoft David (English male) for Indonesian text - works better
+        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                       voices.find(v => v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('id-ID'));
+        console.log('Malay/Rojak selected voice:', selectedVoice?.name);
       } else if (selectedLanguage === 'bengali') {
-        // Try to find male Hindi voice
-        selectedVoice = voices.find(v =>
-          v.lang.includes('hi-IN') &&
-          (v.name.toLowerCase().includes('male') ||
-           v.name.toLowerCase().includes('purush'))
-        ) || voices.find(v => v.lang.includes('hi-IN')); // Fallback to any Hindi
+        // Force Microsoft David for Hindi text - more reliable
+        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                       voices.find(v => v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('hi-IN'));
+        console.log('Bengali selected voice:', selectedVoice?.name);
       } else {
-        // Try to find male English voice
-        selectedVoice = voices.find(v =>
-          v.lang.includes('en-US') &&
-          (v.name.toLowerCase().includes('male') ||
-           v.name.toLowerCase().includes('david') ||
-           v.name.toLowerCase().includes('mark'))
-        ) || voices.find(v => v.lang.includes('en-US') && v.name.includes('Microsoft')) ||
-          voices.find(v => v.lang.includes('en-US') && v.default);
+        // Force Microsoft David for English
+        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                       voices.find(v => v.name.includes('Microsoft Mark')) ||
+                       voices.find(v => v.name.includes('Google')) ||
+                       voices.find(v => v.lang.includes('en-US') && v.default);
+        console.log('English selected voice:', selectedVoice?.name);
       }
       
       if (selectedVoice) {
@@ -227,13 +227,17 @@ export default function ViolationAlertFIXED() {
 
   useEffect(() => {
     if (showAlert) {
-      // Play alert sound
+      // Play alert sound immediately
       playAlertSound();
       
-      // Only speak automatically if we have permission (HTTP or user granted)
-      if (speechPermissionGranted) {
+      // Speak immediately with popup - grant permission automatically for alerts
+      setSpeechPermissionGranted(true);
+      setSpeechError(null);
+      
+      // Small delay to ensure popup is visible, then speak immediately
+      setTimeout(() => {
         speakAlertMessage(alertMessage);
-      }
+      }, 100);
       
       // Auto-hide after 6 seconds for all languages
       const timer = setTimeout(() => {
@@ -248,7 +252,7 @@ export default function ViolationAlertFIXED() {
         }
       };
     }
-  }, [showAlert, setShowAlert, alertMessage, selectedLanguage, speechPermissionGranted]);
+  }, [showAlert, setShowAlert, alertMessage, selectedLanguage]);
 
   return (
     <AnimatePresence>
