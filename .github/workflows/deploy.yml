@@ -41,6 +41,9 @@ jobs:
           sed -i 's/self\.__next_f/(typeof self !== "undefined" ? self : window).__next_f/g' out/index.html
         fi
         
+    - name: Create .nojekyll file
+      run: touch out/.nojekyll
+        
     - name: Setup Pages
       uses: actions/configure-pages@v4
       
