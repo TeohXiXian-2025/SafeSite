@@ -108,25 +108,40 @@ export default function ViolationAlert() {
     }, 3000);
   };
 
+  // Simple test function for debugging speech
+  const testSpeech = () => {
+    console.log('=== SPEECH TEST ===');
+    console.log('Speech synthesis supported:', 'speechSynthesis' in window);
+    console.log('Available voices:', window.speechSynthesis.getVoices().length);
+    console.log('Current language:', selectedLanguage);
+    
+    if ('speechSynthesis' in window) {
+      const testUtterance = new SpeechSynthesisUtterance('Test speech. This is a test.');
+      testUtterance.lang = selectedLanguage === 'malay' || selectedLanguage === 'rojak' ? 'ms-MY' : 'en-US';
+      testUtterance.rate = 1.0;
+      testUtterance.pitch = 1.0;
+      
+      testUtterance.onstart = () => console.log('Test speech started');
+      testUtterance.onend = () => console.log('Test speech ended');
+      testUtterance.onerror = (e) => console.error('Test speech error:', e);
+      
+      window.speechSynthesis.speak(testUtterance);
+    }
+    console.log('=== END SPEECH TEST ===');
+  };
+
   const speakAlertMessage = (message) => {
     console.log('ViolationAlert - speakAlertMessage called with:', message);
     console.log('ViolationAlert - selectedLanguage:', selectedLanguage);
     
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
+      // Cancel any ongoing speech immediately
       window.speechSynthesis.cancel();
       
-      // Wait a moment for cancellation to take effect
-      setTimeout(() => {
-        // Ensure speech synthesis is ready
-        if (window.speechSynthesis.pendingStatus === 'speaking') {
-          window.speechSynthesis.cancel();
-          // Wait a bit longer if still speaking
-          setTimeout(() => speakAlertMessageInternal(message, selectedLanguage, alertViolationType), 200);
-          return;
-        }
-        speakAlertMessageInternal(message, selectedLanguage, alertViolationType);
-      }, 100);
+      // Speak immediately without complex timing
+      speakAlertMessageInternal(message, selectedLanguage, alertViolationType);
+    } else {
+      console.log('Speech synthesis not supported');
     }
   };
 
@@ -134,8 +149,8 @@ export default function ViolationAlert() {
         // Create speech synthesis utterance
         const utterance = new SpeechSynthesisUtterance();
         
-        // Configure based on selected language
-        if (selectedLanguage === 'malay') {
+        // Configure based on language parameter (not selectedLanguage state)
+        if (language === 'malay') {
           // For Malay, use the same message as displayed to ensure consistency
           // Extract the violation type and use the proper Malay translation
           let malayMessage = message;
@@ -158,7 +173,7 @@ export default function ViolationAlert() {
           utterance.lang = 'ms-MY';
           utterance.rate = 0.95; // Slightly adjusted for better clarity
           utterance.pitch = 1.05; // More natural pitch
-      } else if (selectedLanguage === 'rojak') {
+      } else if (language === 'rojak') {
         // For Bahasa Rojak, override with natural Malaysian-style urgent speech
         // Extract worker name from the message
         const workerMatch = message.match(/Worker:\s*([A-Za-z\s]+)/);
@@ -259,17 +274,10 @@ export default function ViolationAlert() {
         }
       };
       
-      // Ensure speech synthesis is ready
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        setTimeout(() => {
-          console.log('About to speak:', utterance.text);
-          window.speechSynthesis.speak(utterance);
-        }, 200);
-      } else {
-        console.log('About to speak:', utterance.text);
-        window.speechSynthesis.speak(utterance);
-      }
+      // Simple speech execution without complex timing
+      console.log('About to speak:', utterance.text);
+      console.log('Voice being used:', utterance.voice ? utterance.voice.name : 'default');
+      window.speechSynthesis.speak(utterance);
   };
 
   useEffect(() => {
@@ -385,6 +393,13 @@ export default function ViolationAlert() {
                   title="Repeat Message"
                 >
                   <Speaker className={`w-4 h-4 text-white ${isSpeaking ? 'animate-pulse' : ''}`} />
+                </button>
+                <button
+                  onClick={testSpeech}
+                  className="p-1 hover:bg-red-600 rounded transition-colors"
+                  title="Test Speech"
+                >
+                  <Volume2 className="w-4 h-4 text-white" />
                 </button>
                 <div className="text-white text-sm">
                   {new Date().toLocaleTimeString()}
