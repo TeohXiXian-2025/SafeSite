@@ -249,12 +249,88 @@ export default function ViolationAlert() {
         langToUse = 'ms-MY';
       }
       
-      // Create simple utterance
+      // Create utterance
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = langToUse;
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
+      
+      // Enhanced voice selection for consistent Bahasa Rojak
+      if (language === 'malay' || language === 'rojak') {
+        const voices = availableVoices;
+        let preferredVoice = null;
+        
+        // Priority 1: Malaysian voices
+        preferredVoice = voices.find(voice =>
+          voice.lang.includes('ms-MY') ||
+          voice.lang.includes('ms-ID')
+        );
+        
+        // Priority 2: Indonesian voices (very similar to Malaysian)
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('id-ID') ||
+            voice.name.toLowerCase().includes('indonesian')
+          );
+        }
+        
+        // Priority 3: Google Malay voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.toLowerCase().includes('malay') &&
+            voice.name.toLowerCase().includes('google')
+          );
+        }
+        
+        // Priority 4: Microsoft Malay voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.toLowerCase().includes('malay') &&
+            voice.name.toLowerCase().includes('microsoft')
+          );
+        }
+        
+        // Priority 5: Any voice that supports Malay
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('ms')
+          );
+        }
+        
+        // Priority 6: Fallback to default English voice (better than nothing)
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.default && voice.lang.includes('en')
+          );
+        }
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+          console.log('Selected voice for Malay/Rojak:', preferredVoice.name, '(', preferredVoice.lang, ')');
+        } else {
+          console.log('No suitable Malay voice found, using default');
+        }
+        
+        // Adjust speech parameters for more natural Malaysian accent
+        utterance.rate = 0.95; // Slightly slower for clarity
+        utterance.pitch = 1.0; // Normal pitch
+        utterance.volume = 1.0; // Full volume for alerts
+      } else {
+        // English voice selection
+        const voices = availableVoices;
+        let preferredVoice = voices.find(voice =>
+          voice.lang.includes('en-US') &&
+          (voice.name.toLowerCase().includes('google') ||
+           voice.name.toLowerCase().includes('microsoft') ||
+           voice.name.toLowerCase().includes('siri'))
+        );
+        
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+          console.log('Selected voice for English:', preferredVoice.name);
+        }
+      }
       
       // Simple event handlers
       utterance.onstart = () => {

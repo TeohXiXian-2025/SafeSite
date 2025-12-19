@@ -468,11 +468,12 @@ export default function WorkerDigitalPassport() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // Select appropriate voice with better cross-platform compatibility
+      // Enhanced voice selection for consistent speech across platforms
       const voices = availableVoices;
       let preferredVoice;
       
       if (lang === 'bn') {
+        // Bengali voice selection
         preferredVoice = voices.find(voice =>
           voice.lang.includes('bn') ||
           voice.lang.includes('hi') ||
@@ -480,16 +481,58 @@ export default function WorkerDigitalPassport() {
           voice.name.includes('Hindi')
         ) || voices.find(voice => voice.lang.includes('en') && voice.default);
       } else if (lang === 'ms') {
+        // Enhanced Malay voice selection (same logic as ViolationAlert)
+        // Priority 1: Malaysian voices
         preferredVoice = voices.find(voice =>
-          voice.lang.includes('ms') ||
-          voice.lang.includes('id') ||
-          voice.name.includes('Malay') ||
-          voice.name.includes('Indonesian')
-        ) || voices.find(voice =>
-          (voice.lang.includes('en-US') || voice.lang.includes('en-GB')) &&
-          (voice.name.includes('Google') || voice.name.includes('Microsoft'))
-        ) || voices.find(voice => voice.lang.includes('en') && voice.default);
+          voice.lang.includes('ms-MY') ||
+          voice.lang.includes('ms-ID')
+        );
+        
+        // Priority 2: Indonesian voices (very similar to Malaysian)
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('id-ID') ||
+            voice.name.toLowerCase().includes('indonesian')
+          );
+        }
+        
+        // Priority 3: Google Malay voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.toLowerCase().includes('malay') &&
+            voice.name.toLowerCase().includes('google')
+          );
+        }
+        
+        // Priority 4: Microsoft Malay voices
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.name.toLowerCase().includes('malay') &&
+            voice.name.toLowerCase().includes('microsoft')
+          );
+        }
+        
+        // Priority 5: Any voice that supports Malay
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('ms')
+          );
+        }
+        
+        // Priority 6: Fallback to default English voice
+        if (!preferredVoice) {
+          preferredVoice = voices.find(voice =>
+            voice.default && voice.lang.includes('en')
+          );
+        }
+        
+        // Adjust speech parameters for more natural Malaysian accent
+        utterance.rate = 0.95; // Slightly slower for clarity
+        utterance.pitch = 1.0; // Normal pitch
+        utterance.volume = 1.0; // Full volume
+        
       } else {
+        // English voice selection
         preferredVoice = voices.find(voice =>
           (voice.name.includes('Google') && voice.lang.includes('en')) ||
           (voice.name.includes('Microsoft') && voice.lang.includes('en')) ||
@@ -502,6 +545,9 @@ export default function WorkerDigitalPassport() {
       
       if (preferredVoice) {
         utterance.voice = preferredVoice;
+        console.log('Selected voice for', lang, ':', preferredVoice.name, '(', preferredVoice.lang, ')');
+      } else {
+        console.log('No suitable voice found for', lang, ', using default');
       }
       
       utterance.onstart = () => {
@@ -598,6 +644,44 @@ export default function WorkerDigitalPassport() {
         utterance.rate = 1.4; // Faster for more urgency
         utterance.pitch = 1.3; // Higher pitch for emergency
         utterance.volume = 1.0; // Maximum volume for urgency
+        
+        // Enhanced voice selection for red zone alerts
+        if (selectedLanguage === 'malay' || selectedLanguage === 'rojak' || selectedLanguage === 'malayPlusEnglish') {
+          const voices = availableVoices;
+          let preferredVoice = null;
+          
+          // Same priority logic as other functions
+          preferredVoice = voices.find(voice =>
+            voice.lang.includes('ms-MY') ||
+            voice.lang.includes('ms-ID')
+          );
+          
+          if (!preferredVoice) {
+            preferredVoice = voices.find(voice =>
+              voice.lang.includes('id-ID') ||
+              voice.name.toLowerCase().includes('indonesian')
+            );
+          }
+          
+          if (!preferredVoice) {
+            preferredVoice = voices.find(voice =>
+              voice.name.toLowerCase().includes('malay') &&
+              voice.name.toLowerCase().includes('google')
+            );
+          }
+          
+          if (!preferredVoice) {
+            preferredVoice = voices.find(voice =>
+              voice.name.toLowerCase().includes('malay') &&
+              voice.name.toLowerCase().includes('microsoft')
+            );
+          }
+          
+          if (preferredVoice) {
+            utterance.voice = preferredVoice;
+            console.log('Selected red zone voice:', preferredVoice.name);
+          }
+        }
         
         utterance.onstart = () => {
           console.log('Red zone alert speech started');
