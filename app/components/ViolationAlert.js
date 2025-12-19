@@ -155,9 +155,17 @@ export default function ViolationAlertFIXED() {
         utterance.lang = 'en-US'; // English
       }
       
-      // URGENT SETTINGS - Even more aggressive for alerts
-      utterance.rate = 1.6; // Much faster for urgency
-      utterance.pitch = 0.6; // Much lower pitch for male voice sound
+      // URGENT SETTINGS - Adjusted for different languages
+      if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
+        utterance.rate = 1.2; // Slightly slower for Malay/Rojak clarity
+        utterance.pitch = 0.7; // Male voice but not too low
+      } else if (selectedLanguage === 'bengali') {
+        utterance.rate = 1.4; // Fast for Bengali
+        utterance.pitch = 0.6; // Lower pitch for male voice
+      } else {
+        utterance.rate = 1.6; // Fastest for English
+        utterance.pitch = 0.6; // Lower pitch for male voice
+      }
       utterance.volume = 1.0; // Maximum volume
       
       // SMART VOICE SELECTION - Correct language + male voice preference

@@ -416,36 +416,22 @@ export default function WorkerDigitalPassportFIXED() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // SMART VOICE SELECTION - Correct language + male voice preference
+      // FORCE MALE VOICE SELECTION - Aggressive for worker page
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
       console.log('=== WORKER PASSPORT VOICES ===');
+      voices.forEach((v, i) => {
+        console.log(`${i+1}. ${v.name} (${v.lang})`);
+      });
       
-      if (language === 'malay' || language === 'rojak') {
-        // Priority 1: Indonesian voice (correct language)
-        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
-        // Priority 2: Any male voice if Indonesian not available
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                         voices.find(v => v.name.includes('Microsoft Mark'));
-        }
-      } else if (language === 'bengali') {
-        // Priority 1: Hindi voice (correct language)
-        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
-        // Priority 2: Any male voice if Hindi not available
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                         voices.find(v => v.name.includes('Microsoft Mark'));
-        }
-      } else {
-        // English - use male voice
-        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                       voices.find(v => v.name.includes('Microsoft Mark')) ||
-                       voices.find(v => v.name.includes('Google'));
-      }
+      // FORCE MICROSOFT DAVID FOR ALL LANGUAGES - Most reliable male voice
+      selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                     voices.find(v => v.name.includes('Microsoft Mark')) ||
+                     voices.find(v => v.name.toLowerCase().includes('male')) ||
+                     voices.find(v => v.name.includes('Google'));
       
-      console.log('Worker selected voice:', selectedVoice?.name);
+      console.log('Worker FORCE selected voice:', selectedVoice?.name);
       
       if (selectedVoice) {
         utterance.voice = selectedVoice;
@@ -531,10 +517,10 @@ export default function WorkerDigitalPassportFIXED() {
     
     const message = warningMessages[selectedLanguage] || warningMessages.english;
     
-    // Show alert
+    // Show alert IMMEDIATELY
     alert(message);
     
-    // Speak the alert with urgency
+    // Speak the alert with urgency IMMEDIATELY - no delay
     speakText(message, selectedLanguage, true); // true = urgent mode
   };
 
