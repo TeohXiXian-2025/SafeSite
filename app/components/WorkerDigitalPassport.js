@@ -632,7 +632,7 @@ export default function WorkerDigitalPassport() {
       english: 'RED ZONE ALERT! Evacuate Immediately!',
       malay: 'AMARAN ZON MERAH! Evakuasi Segera!',
       bengali: 'রেড জোন সতর্কতা! অবিলম্বে সরে যান!',
-      rojak: 'AWAS! ZON MERAH NI! GILA BAHAYA! LARI SEKARANG! CEPAT KELUAR!',
+      rojak: 'AWAS! ZON MERAH INI! SANGAT BAHAYA! LARI SEKARANG! CEPAT KELUAR!',
       malayPlusEnglish: 'AMARAN ZON MERAH! Evakuasi Segera! RED ZONE ALERT! Evacuate Immediately!'
     };
     

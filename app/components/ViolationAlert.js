@@ -269,15 +269,15 @@ export default function ViolationAlert() {
         }
         langToUse = 'ms-MY';
       } else if (language === 'rojak') {
-        // Authentic Malaysian construction site slang
+        // Malaysian slang optimized for Indonesian TTS compatibility
         if (violationType === 'UNHOOKED HARNESS') {
-          textToSpeak = 'Woi! Tali safety tak kait lagi ke? Gila bahaya ni! Cepat kait!';
+          textToSpeak = 'Woi! Tali safety tidak terikat lagi! Bahaya sekali! Cepat ikat!';
         } else if (violationType === 'NO HELMET') {
-          textToSpeak = 'Eh! Tak pakai helmet ke? Boleh jatuh kepala ni! Pakai sekarang!';
+          textToSpeak = 'Eh! Tidak pakai helmet? Bisa jatuh kepala! Pakai sekarang juga!';
         } else if (violationType === 'UNAUTHORIZED ACCESS') {
-          textToSpeak = 'Hei! Apa kau buat sini? Ini kawasan larang! Keluar dari sini!';
+          textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
         }
-        langToUse = 'ms-MY'; // Use Malay for authentic slang
+        langToUse = 'id-ID'; // Use Indonesian for better compatibility
       }
       
       // Create utterance
@@ -316,14 +316,14 @@ export default function ViolationAlert() {
           utterance.volume = 1.0;
         }
         
-        // For rojak, use authentic Malaysian slang
+        // For rojak, use Malaysian slang optimized for Indonesian TTS
         if (language === 'rojak') {
           if (violationType === 'UNHOOKED HARNESS') {
-            textToSpeak = 'Woi! Tali safety tak kait lagi ke? Gila bahaya ni! Cepat kait!';
+            textToSpeak = 'Woi! Tali safety tidak terikat lagi! Bahaya sekali! Cepat ikat!';
           } else if (violationType === 'NO HELMET') {
-            textToSpeak = 'Eh! Tak pakai helmet ke? Boleh jatuh kepala ni! Pakai sekarang!';
+            textToSpeak = 'Eh! Tidak pakai helmet? Bisa jatuh kepala! Pakai sekarang juga!';
           } else if (violationType === 'UNAUTHORIZED ACCESS') {
-            textToSpeak = 'Hei! Apa kau buat sini? Ini kawasan larang! Keluar dari sini!';
+            textToSpeak = 'Hei! Apa yang kamu lakukan di sini? Kawasan dilarang! Keluar sekarang!';
           }
         }
       } else {
