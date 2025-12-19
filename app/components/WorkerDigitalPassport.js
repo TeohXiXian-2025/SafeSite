@@ -402,9 +402,9 @@ export default function WorkerDigitalPassportFIXED() {
       // Create utterance
       const utterance = new SpeechSynthesisUtterance(text);
       
-      // LANGUAGE MAPPING - Use English for Bengali to fix sound issue
+      // LANGUAGE MAPPING - Use Indonesian for Malay/Rojak to fix pronunciation
       if (language === 'malay' || language === 'rojak') {
-        utterance.lang = 'id-ID'; // Indonesian for Malay
+        utterance.lang = 'id-ID'; // Indonesian for Malay/Rojak
       } else if (language === 'bengali') {
         utterance.lang = 'en-US'; // Use English for Bengali to fix sound
       } else {

@@ -129,7 +129,7 @@ export default function ViolationAlertFIXED() {
         if (alertViolationType === 'UNHOOKED HARNESS') {
           textToSpeak = 'WOI! TALI SAFETY LEPAS! BAHAYA GILA! IKAT BALIK SEKARANG JANGAN BIARKAN!';
         } else if (alertViolationType === 'NO HELMET') {
-          textToSpeak = 'EH! PAKAI HELMET LA! KEPALA BOLEH PECAH! PAKAI SEKARANG JUGA!';
+          textToSpeak = 'EH! PAKAI TOPI KESELAMATAN LA! KEPALA BOLEH PECAH! PAKAI SEKARANG JUGA!';
         } else if (alertViolationType === 'UNAUTHORIZED ACCESS') {
           textToSpeak = 'HEI! SIAPA KAU MASUK SINI? KAWASAN LARANG! KELUAR CEPAT DARI SINI!';
         }
