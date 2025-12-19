@@ -160,29 +160,35 @@ export default function ViolationAlertFIXED() {
       utterance.pitch = 0.6; // Much lower pitch for male voice sound
       utterance.volume = 1.0; // Maximum volume
       
-      // FORCE MALE VOICE SELECTION
+      // SMART VOICE SELECTION - Correct language + male voice preference
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
-      console.log('=== AVAILABLE VOICES FOR MALE SELECTION ===');
+      console.log('=== AVAILABLE VOICES FOR SELECTION ===');
       voices.forEach((v, i) => {
         console.log(`${i+1}. ${v.name} (${v.lang})`);
       });
       
       if (selectedLanguage === 'malay' || selectedLanguage === 'rojak') {
-        // Force Microsoft David (English male) for Indonesian text - works better
-        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                       voices.find(v => v.name.includes('Google')) ||
-                       voices.find(v => v.lang.includes('id-ID'));
+        // Priority 1: Indonesian voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+        // Priority 2: Any male voice if Indonesian not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
         console.log('Malay/Rojak selected voice:', selectedVoice?.name);
       } else if (selectedLanguage === 'bengali') {
-        // Force Microsoft David for Hindi text - more reliable
-        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                       voices.find(v => v.name.includes('Google')) ||
-                       voices.find(v => v.lang.includes('hi-IN'));
+        // Priority 1: Hindi voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
+        // Priority 2: Any male voice if Hindi not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
         console.log('Bengali selected voice:', selectedVoice?.name);
       } else {
-        // Force Microsoft David for English
+        // English - use male voice
         selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
                        voices.find(v => v.name.includes('Microsoft Mark')) ||
                        voices.find(v => v.name.includes('Google')) ||
@@ -230,14 +236,14 @@ export default function ViolationAlertFIXED() {
       // Play alert sound immediately
       playAlertSound();
       
-      // Speak immediately with popup - grant permission automatically for alerts
+      // Speak IMMEDIATELY with popup - no delay
       setSpeechPermissionGranted(true);
       setSpeechError(null);
       
-      // Small delay to ensure popup is visible, then speak immediately
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure popup is rendered before speech
+      requestAnimationFrame(() => {
         speakAlertMessage(alertMessage);
-      }, 100);
+      });
       
       // Auto-hide after 6 seconds for all languages
       const timer = setTimeout(() => {

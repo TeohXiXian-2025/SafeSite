@@ -416,16 +416,34 @@ export default function WorkerDigitalPassportFIXED() {
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       
-      // FORCE MALE VOICE SELECTION
+      // SMART VOICE SELECTION - Correct language + male voice preference
       const voices = window.speechSynthesis.getVoices();
       let selectedVoice = null;
       
       console.log('=== WORKER PASSPORT VOICES ===');
       
-      // Force Microsoft David for all languages - most reliable male voice
-      selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
-                     voices.find(v => v.name.includes('Microsoft Mark')) ||
-                     voices.find(v => v.name.includes('Google'));
+      if (language === 'malay' || language === 'rojak') {
+        // Priority 1: Indonesian voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('id-ID'));
+        // Priority 2: Any male voice if Indonesian not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
+      } else if (language === 'bengali') {
+        // Priority 1: Hindi voice (correct language)
+        selectedVoice = voices.find(v => v.lang.includes('hi-IN'));
+        // Priority 2: Any male voice if Hindi not available
+        if (!selectedVoice) {
+          selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                         voices.find(v => v.name.includes('Microsoft Mark'));
+        }
+      } else {
+        // English - use male voice
+        selectedVoice = voices.find(v => v.name.includes('Microsoft David')) ||
+                       voices.find(v => v.name.includes('Microsoft Mark')) ||
+                       voices.find(v => v.name.includes('Google'));
+      }
       
       console.log('Worker selected voice:', selectedVoice?.name);
       
